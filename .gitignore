@@ -14,6 +14,3 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
-
-# enunciado do desafio: fica local, nao vai para o repositorio publico
-docs/Desafio-Elite-Dev-2026.pdf
