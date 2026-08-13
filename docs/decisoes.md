@@ -82,7 +82,44 @@ de QR apontados para o mesmo ingresso passariam os dois.
 
 ---
 
+## Partido visual: "Bilheteria"
+
+**Escolha:** interface clara, neutra e densa. Base de 14px, radius pequeno,
+azul funcional para acao, tres cores de estado bem separadas.
+
+**Por que:** a referencia nao e vitrine de streaming, e guiche. As duas telas
+que mais importam neste sistema sao operadas por repeticao — a portaria valida
+dezenas de ingressos seguidos, o organizador administra varias sessoes. Nesse
+uso, densidade e legibilidade valem mais que impacto visual, e cor forte deve
+significar alguma coisa em vez de decorar.
+
+Os tres tons de estado (`ok`, `warn`, `danger`) existem por causa de um
+requisito especifico: a portaria precisa distinguir VALIDO, JA UTILIZADO e
+INVALIDO a alguns passos da tela.
+
+**Descartado — "sala escura":** fundo escuro com um acento quente, jogando toda
+a atencao no mapa de assentos. Era a opcao mais bonita e a que melhor destaca a
+tela principal do cliente. Perdeu porque penaliza justamente as telas de
+operacao: tela escura em portaria com luz ambiente forte, que e o caso real de
+uma entrada de cinema, fica dificil de ler.
+
+**Descartado — "papel de ingresso":** claro e quente, serifa nos titulos,
+picotes evocando o ingresso fisico. Mais memoravel e o mais distante do visual
+generico de ferramenta. Perdeu por custo: o mapa de assentos e a portaria
+precisariam de tratamento proprio para a textura nao virar ruido, e o prazo nao
+comporta duas linguagens visuais.
+
+**Consequencia assumida:** e o partido menos chamativo dos tres. A aposta e que
+consistencia e clareza sob repeticao contem mais que primeira impressao — mas e
+uma aposta, e vale dizer que foi consciente.
+
+**Numeros tabulares em toda a interface:** preco, contador regressivo, poltrona
+e codigo de ingresso mudam com a tela parada. Com largura variavel, o texto ao
+redor treme a cada segundo do contador.
+
+---
+
 ## _(seguir preenchendo)_
 
-Autenticacao, estrutura de pastas do front, tratamento de erro, o que foi feito
-com IA e o que foi feito na mao.
+Estrutura de pastas do front, tratamento de erro, o que foi feito com IA e o
+que foi feito na mao.

@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  Partido visual: "Bilheteria".
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  Claro, neutro e denso, feito para operar. A referencia nao e uma vitrine de
+  streaming: e o guiche e a portaria, onde alguem repete a mesma acao dezenas
+  de vezes e precisa ler rapido. Por isso a densidade alta, o azul funcional
+  (que sinaliza acao sem competir com o conteudo) e as tres cores de estado
+  bem separadas — a portaria le VALIDO, JA UTILIZADO e INVALIDO de relance.
+
+  Registrado em docs/decisoes.md.
+*/
+
+@theme {
+  /* Superficies */
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #eceef1;
+
+  /* Texto */
+  --color-ink: #12141a;
+  --color-muted: #626977;
+  --color-faint: #949aa6;
+
+  /* Linhas */
+  --color-line: #dcdfe5;
+  --color-line-strong: #c2c7d0;
+
+  /* Acao */
+  --color-accent: #1b57d6;
+  --color-accent-hover: #1748b3;
+  --color-accent-soft: #e8effc;
+
+  /* Estados. Usados na portaria, onde a distincao precisa funcionar de longe. */
+  --color-ok: #0e7a4b;
+  --color-ok-soft: #e3f5ec;
+  --color-warn: #b25e00;
+  --color-warn-soft: #fdf0dd;
+  --color-danger: #c0271b;
+  --color-danger-soft: #fdeae8;
+
+  /* Mapa de assentos */
+  --color-seat-free: #ffffff;
+  --color-seat-taken: #d3d7de;
+  --color-seat-picked: #1b57d6;
+
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  /* Inter para tudo. Mono so onde o valor e transcrito a mao: o codigo do
+     ingresso, que a portaria digita quando a camera falha. */
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  /* 14px de base: densidade de ferramenta, nao de pagina de marketing. */
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/*
+  Numeros tabulares em toda a interface. Preco, contador regressivo, poltrona e
+  codigo de ingresso mudam de valor com a tela parada; com largura variavel, o
+  texto ao redor treme a cada segundo do contador.
+*/
+:where(body) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco visivel e consistente: a portaria opera muito no teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
