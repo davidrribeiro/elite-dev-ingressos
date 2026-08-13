@@ -1,0 +1,174 @@
+// Modelagem da plataforma de eventos e ingressos.
+//
+// Duas garantias criticas estao no banco, nao na aplicacao:
+//   1. Um assento nao pode ser vendido duas vezes -> @@unique em ReservationSeat.seatId
+//   2. Um ingresso nao pode ser validado duas vezes -> Ticket.usedAt via UPDATE condicional
+// Ver docs/decisoes.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// A URL de conexao fica em prisma.config.ts (exigencia do Prisma 7).
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ORGANIZER
+  CUSTOMER
+  GATE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  PENDING
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  APPROVED
+  DECLINED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  events        Event[]        @relation("OrganizerEvents")
+  reservations  Reservation[]
+  validatedTickets Ticket[]    @relation("ValidatedBy")
+
+  @@map("users")
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  organizer   User        @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  organizerId String
+
+  // Dados vindos do catalogo externo (TMDb), copiados no momento da criacao.
+  // Copiar em vez de consultar a API a cada leitura mantem o evento estavel
+  // mesmo se o catalogo mudar ou ficar indisponivel.
+  tmdbId      Int?
+  title       String
+  overview    String?     @db.Text
+  posterPath  String?
+
+  // Dados definidos pelo organizador
+  venue       String
+  startsAt    DateTime
+  priceCents  Int
+  status      EventStatus @default(DRAFT)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  seats        Seat[]
+  reservations Reservation[]
+  tickets      Ticket[]
+
+  @@index([status, startsAt])
+  @@map("events")
+}
+
+// Um assento fisico do evento. Gerados em lote na criacao do evento
+// a partir do layout escolhido pelo organizador (fileiras x assentos por fileira).
+model Seat {
+  id      String @id @default(uuid())
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+  row     String // "A", "B", ...
+  number  Int    // 1, 2, ...
+
+  reservationSeat ReservationSeat?
+  ticket          Ticket?
+
+  @@unique([eventId, row, number])
+  @@map("seats")
+}
+
+// Um pedido: o cliente segura N assentos e tem ate expiresAt para pagar.
+model Reservation {
+  id         String            @id @default(uuid())
+  event      Event             @relation(fields: [eventId], references: [id])
+  eventId    String
+  customer   User              @relation(fields: [customerId], references: [id])
+  customerId String
+  status     ReservationStatus @default(PENDING)
+  totalCents Int
+  expiresAt  DateTime
+  createdAt  DateTime          @default(now())
+
+  seats    ReservationSeat[]
+  payments Payment[]
+  tickets  Ticket[]
+
+  @@index([status, expiresAt])
+  @@map("reservations")
+}
+
+// A trava anti-overbooking. A EXISTENCIA da linha e o bloqueio do assento:
+// o unique em seatId impede que dois pedidos segurem o mesmo lugar, mesmo
+// em requisicoes simultaneas. Ao cancelar ou expirar, as linhas sao apagadas
+// e o assento volta ao estoque.
+model ReservationSeat {
+  id            String      @id @default(uuid())
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  reservationId String
+  seat          Seat        @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  seatId        String      @unique
+
+  @@map("reservation_seats")
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  reservation   Reservation   @relation(fields: [reservationId], references: [id])
+  reservationId String
+  status        PaymentStatus
+  amountCents   Int
+  // Motivo da recusa na simulacao, exibido ao cliente
+  declineReason String?
+  createdAt     DateTime      @default(now())
+
+  @@map("payments")
+}
+
+// Emitido apenas quando o pagamento e aprovado: um ingresso por assento.
+model Ticket {
+  id            String      @id @default(uuid())
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  reservationId String
+  event         Event       @relation(fields: [eventId], references: [id])
+  eventId       String
+  seat          Seat        @relation(fields: [seatId], references: [id])
+  seatId        String      @unique
+
+  // Conteudo do QR. Aleatorio e opaco: nao pode ser adivinhado nem forjado.
+  code       String @unique
+
+  // Token separado para o link publico de compartilhamento. NAO e o code:
+  // quem recebe o link ve o ingresso, mas nao consegue passar na portaria.
+  shareToken String @unique
+
+  // Validacao na portaria. usedAt nulo = ainda nao usado.
+  usedAt       DateTime?
+  validatedBy  User?     @relation("ValidatedBy", fields: [validatedById], references: [id])
+  validatedById String?
+
+  createdAt DateTime @default(now())
+
+  @@map("tickets")
+}
