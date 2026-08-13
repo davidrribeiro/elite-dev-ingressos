@@ -19,7 +19,9 @@ describe('generateSeats', () => {
   });
 
   it('nao gera assento duplicado', () => {
-    const chaves = generateSeats(MAX_ROWS, 10).map((s) => `${s.row}${s.number}`);
+    const chaves = generateSeats(MAX_ROWS, 10).map(
+      (s) => `${s.row}${s.number}`,
+    );
     expect(new Set(chaves).size).toBe(chaves.length);
   });
 

@@ -42,11 +42,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractToken(request);
 
     if (!token) {
-      throw new AppError(
-        ErrorCode.UNAUTHORIZED,
-        'Entre para continuar.',
-        401,
-      );
+      throw new AppError(ErrorCode.UNAUTHORIZED, 'Entre para continuar.', 401);
     }
 
     try {

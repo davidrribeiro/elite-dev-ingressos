@@ -74,7 +74,10 @@ export class AppExceptionFilter implements ExceptionFilter {
     status: number;
     body: ErrorBody;
   } {
-    const status = exception.getStatus();
+    // Anotado como HttpStatus (e nao `as HttpStatus`, que o eslint --fix
+    // remove por julgar redundante) para as comparacoes abaixo serem
+    // verificadas contra o enum em vez de contra numeros soltos.
+    const status: HttpStatus = exception.getStatus();
     const payload = exception.getResponse();
 
     // O ValidationPipe joga um BadRequestException com `message` em array.
@@ -109,7 +112,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     };
   }
 
-  private codeForStatus(status: number): string {
+  private codeForStatus(status: HttpStatus): string {
     switch (status) {
       case HttpStatus.UNAUTHORIZED:
         return ErrorCode.UNAUTHORIZED;

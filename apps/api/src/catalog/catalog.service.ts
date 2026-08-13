@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppError, ErrorCode } from '../common/errors/app-error';
-import {
-  CatalogMovie,
-  TmdbMovie,
-  TmdbPage,
-} from './catalog.types';
+import { CatalogMovie, TmdbMovie, TmdbPage } from './catalog.types';
 
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
 const REQUEST_TIMEOUT_MS = 8000;
@@ -126,7 +122,10 @@ export class CatalogService {
       `${this.config.getOrThrow<string>('TMDB_BASE_URL')}${path}`,
     );
 
-    url.searchParams.set('api_key', this.config.getOrThrow<string>('TMDB_API_KEY'));
+    url.searchParams.set(
+      'api_key',
+      this.config.getOrThrow<string>('TMDB_API_KEY'),
+    );
     url.searchParams.set('language', 'pt-BR');
 
     for (const [key, value] of Object.entries(params)) {

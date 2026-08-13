@@ -17,7 +17,9 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ token: string; user: PublicUser }> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ token: string; user: PublicUser }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
       select: { id: true },

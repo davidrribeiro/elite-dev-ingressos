@@ -19,7 +19,9 @@ export const MAX_SEATS_PER_ROW = 40;
  */
 export function generateSeats(rows: number, seatsPerRow: number): SeatDraft[] {
   if (!Number.isInteger(rows) || !Number.isInteger(seatsPerRow)) {
-    throw new Error('Layout invalido: fileiras e assentos precisam ser inteiros.');
+    throw new Error(
+      'Layout invalido: fileiras e assentos precisam ser inteiros.',
+    );
   }
 
   if (rows < 1 || rows > MAX_ROWS) {

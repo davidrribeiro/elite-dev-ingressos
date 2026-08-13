@@ -115,7 +115,6 @@ export class EventsService {
       where: { id },
       select: {
         ...eventSummary,
-        organizerId: true,
         seats: {
           select: {
             id: true,
@@ -132,7 +131,7 @@ export class EventsService {
       throw AppError.notFound('Sessao');
     }
 
-    const { seats, organizerId: _organizerId, ...rest } = event;
+    const { seats, ...rest } = event;
 
     return {
       ...rest,

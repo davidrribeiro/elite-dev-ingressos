@@ -151,7 +151,9 @@ describe('Sessoes (e2e)', () => {
       .get('/events')
       .expect(200);
 
-    expect(body.events.map((e: { id: string }) => e.id)).not.toContain(eventoId);
+    expect(body.events.map((e: { id: string }) => e.id)).not.toContain(
+      eventoId,
+    );
   });
 
   it('outro organizador nao publica sessao alheia', async () => {
@@ -184,9 +186,9 @@ describe('Sessoes (e2e)', () => {
       .expect(200);
 
     expect(body.seats).toHaveLength(96);
-    expect(body.seats.every((s: { status: string }) => s.status === 'AVAILABLE')).toBe(
-      true,
-    );
+    expect(
+      body.seats.every((s: { status: string }) => s.status === 'AVAILABLE'),
+    ).toBe(true);
 
     // Ordenado por fileira e numero: o front desenha na ordem que recebe.
     expect(body.seats[0]).toMatchObject({ row: 'A', number: 1 });
@@ -197,7 +199,9 @@ describe('Sessoes (e2e)', () => {
     const achou = await request(app.getHttpServer())
       .get('/events?q=Belas Artes')
       .expect(200);
-    expect(achou.body.events.map((e: { id: string }) => e.id)).toContain(eventoId);
+    expect(achou.body.events.map((e: { id: string }) => e.id)).toContain(
+      eventoId,
+    );
 
     const naoAchou = await request(app.getHttpServer())
       .get('/events?q=nao-existe-esse-lugar')

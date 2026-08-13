@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Roles } from '../auth/roles.guard';
 import { CatalogService } from './catalog.service';
