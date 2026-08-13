@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
+import { CatalogModule } from './catalog/catalog.module';
 import { ClockModule } from './common/clock/clock.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -21,8 +22,9 @@ import { PrismaModule } from './prisma/prisma.module';
     ClockModule,
     PrismaModule,
     AuthModule,
-    // Entram nas proximas fatias: CatalogModule, EventsModule,
-    // ReservationsModule, PaymentsModule, TicketsModule, GateModule.
+    CatalogModule,
+    // Entram nas proximas fatias: EventsModule, ReservationsModule,
+    // PaymentsModule, TicketsModule, GateModule.
   ],
   controllers: [AppController],
   providers: [
