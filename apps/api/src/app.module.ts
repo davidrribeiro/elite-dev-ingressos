@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { CatalogModule } from './catalog/catalog.module';
 import { ClockModule } from './common/clock/clock.module';
+import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -23,8 +24,9 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     AuthModule,
     CatalogModule,
-    // Entram nas proximas fatias: EventsModule, ReservationsModule,
-    // PaymentsModule, TicketsModule, GateModule.
+    EventsModule,
+    // Entram nas proximas fatias: ReservationsModule, PaymentsModule,
+    // TicketsModule, GateModule.
   ],
   controllers: [AppController],
   providers: [
