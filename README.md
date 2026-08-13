@@ -68,11 +68,3 @@ Criadas pelo `npm run db:seed`. Senha de todas: `elite123`.
 - [`AGENTS.md`](AGENTS.md) — arquivo de contexto usado com IA.
 
 ---
-
-## _(a preencher antes de entregar)_
-
-- **Uso de IA** — ferramentas usadas, em que partes, e o que foi feito na mao.
-  Exigido pelo enunciado.
-- **O que nao esta funcionando** — a ausencia de explicacao pesa na nota.
-- **Deploy** — URL da aplicacao publicada, se houver (vale 1 ponto).
-- **Testes** — o que esta coberto e como rodar.
