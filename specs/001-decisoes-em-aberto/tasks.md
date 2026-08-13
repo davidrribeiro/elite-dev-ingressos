@@ -65,10 +65,10 @@ demonstracao dos requisitos obrigatorios do desafio.
 - [X] T010 [P] Implementar `CatalogModule` em `apps/api/src/catalog/` com `GET /catalog/movies` (usando `now_playing?region=BR` quando nao houver busca) e cache em memoria com TTL de 10 min
 - [X] T011 Implementar `EventsModule` em `apps/api/src/events/` com criacao (copiando dados do TMDb e gerando assentos), listagem publica, detalhe com mapa e publicacao (depende de T009, T010)
 - [X] T012 Registrar `AuthModule`, `CatalogModule`, `EventsModule`, `ReservationsModule`, `PaymentsModule`, `TicketsModule` e `GateModule` em `apps/api/src/app.module.ts`, no lugar ja reservado por comentario
-- [ ] T013 Ampliar `apps/api/prisma/seed.ts` para criar duas sessoes publicadas em salas diferentes no mesmo dia, com assentos gerados por `generateSeats` (depende de T009, T011) — duas sessoes sao necessarias para `WRONG_EVENT` existir
-- [ ] T014 [P] Criar fetcher em `apps/web/lib/api.ts` que injeta o Bearer, desserializa o envelope de erro em excecao tipada por `code` e centraliza a base URL
-- [ ] T015 [P] Implementar sessao do usuario e telas de entrada em `apps/web/app/(auth)/`, com header que muda conforme o papel
-- [ ] T016 Implementar os primitivos de interface em `apps/web/components/ui/` conforme o partido visual escolhido pelo autor (paleta, tipografia, densidade) — a decisao de design e do autor e precisa estar registrada em `docs/decisoes.md` antes de qualquer tela ser montada
+- [X] T013 Ampliar `apps/api/prisma/seed.ts` para criar duas sessoes publicadas em salas diferentes no mesmo dia, com assentos gerados por `generateSeats` (depende de T009, T011) — duas sessoes sao necessarias para `WRONG_EVENT` existir
+- [X] T014 [P] Criar fetcher em `apps/web/lib/api.ts` que injeta o Bearer, desserializa o envelope de erro em excecao tipada por `code` e centraliza a base URL
+- [X] T015 [P] Implementar sessao do usuario e telas de entrada em `apps/web/app/(auth)/`, com header que muda conforme o papel
+- [X] T016 Implementar os primitivos de interface em `apps/web/components/ui/` conforme o partido visual escolhido pelo autor (paleta, tipografia, densidade) — a decisao de design e do autor e precisa estar registrada em `docs/decisoes.md` antes de qualquer tela ser montada
 
 **Checkpoint**: login funciona nas quatro contas, existe uma sessao publicada com mapa de assentos, e erros da API chegam ao front com `code` estavel
 

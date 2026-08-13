@@ -45,28 +45,30 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // expirado no localStorage renderizaria um header logado e derrubaria o
   // usuario no primeiro clique.
   useEffect(() => {
-    const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (!token) {
-      setLoading(false);
-      return;
+    let ativo = true;
+
+    async function restaurar() {
+      const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+
+      if (token) {
+        try {
+          const encontrado = await api.get<User>('/auth/me', undefined, {
+            token,
+          });
+          if (ativo) setUser(encontrado);
+        } catch (erro) {
+          // Token invalido some. Falha de rede nao: derrubar a sessao porque a
+          // API piscou obrigaria a entrar de novo sem motivo.
+          if (isApiError(erro) && erro.status === 401) {
+            window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+          }
+        }
+      }
+
+      if (ativo) setLoading(false);
     }
 
-    let ativo = true;
-    api
-      .get<User>('/auth/me', undefined, { token })
-      .then((encontrado) => {
-        if (ativo) setUser(encontrado);
-      })
-      .catch((erro: unknown) => {
-        // Token invalido some. Falha de rede nao: derrubar a sessao porque a
-        // API piscou obrigaria a entrar de novo sem motivo.
-        if (isApiError(erro) && erro.status === 401) {
-          window.localStorage.removeItem(TOKEN_STORAGE_KEY);
-        }
-      })
-      .finally(() => {
-        if (ativo) setLoading(false);
-      });
+    void restaurar();
 
     return () => {
       ativo = false;
