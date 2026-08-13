@@ -1,7 +1,6 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AppExceptionFilter } from './common/errors/app-exception.filter';
+import { configureApp } from './configure-app';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,19 +10,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // whitelist descarta campos nao declarados no DTO; transform converte
-  // os tipos primitivos vindos da query string.
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
-  // Envelope unico de erro. Toda falha sai como { error: { code, message } },
-  // e o front decide pelo code.
-  app.useGlobalFilters(new AppExceptionFilter());
+  configureApp(app);
 
   await app.listen(process.env.API_PORT ?? 3333);
 }
