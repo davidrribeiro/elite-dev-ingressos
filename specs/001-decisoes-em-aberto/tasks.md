@@ -44,9 +44,9 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 **Purpose**: dependencias e infraestrutura de teste
 
-- [ ] T001 Adicionar `qrcode`, `@types/qrcode`, `@zxing/browser` e `@zxing/library` as dependencias em `apps/web/package.json` (justificativa em research.md R6 e R7)
-- [ ] T002 [P] Configurar banco de teste dedicado em `apps/api/test/jest-e2e.json` e `.env.test`, apontando para um schema separado do de desenvolvimento
-- [ ] T003 [P] Adicionar script `test:e2e` no `package.json` da raiz, encadeando `db:up` antes da suite
+- [X] T001 Adicionar `qrcode`, `@types/qrcode`, `@zxing/browser` e `@zxing/library` as dependencias em `apps/web/package.json` (justificativa em research.md R6 e R7)
+- [X] T002 [P] Configurar banco de teste dedicado em `apps/api/test/jest-e2e.json` e `.env.test`, apontando para um schema separado do de desenvolvimento
+- [X] T003 [P] Adicionar script `test:e2e` no `package.json` da raiz, encadeando `db:up` antes da suite
 
 ---
 
@@ -56,15 +56,15 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 **⚠️ CRITICAL**: nenhuma user story pode comecar antes desta fase terminar
 
-- [ ] T004 [P] Criar `ClockService` com metodo `now(): Date` em `apps/api/src/common/clock/clock.service.ts` e `clock.module.ts` global — substitui todo `new Date()` de regra de negocio e torna expiracao testavel sem `sleep` (research.md R11)
-- [ ] T005 [P] Definir enum de codigos de erro e classe `AppError` em `apps/api/src/common/errors/app-error.ts`, cobrindo os codigos de `contracts/README.md`
-- [ ] T006 Implementar filtro global de excecao em `apps/api/src/common/errors/app-exception.filter.ts` produzindo o envelope `{ error: { code, message, details } }` e registra-lo em `apps/api/src/main.ts` (depende de T005)
-- [ ] T007 [P] Implementar `AuthModule` com `POST /auth/register`, `POST /auth/login` e `GET /auth/me` em `apps/api/src/auth/`, usando `bcryptjs` e `@nestjs/jwt`
-- [ ] T008 Implementar `JwtAuthGuard`, `RolesGuard`, decorator `@Roles(...)` e `@CurrentUser()` em `apps/api/src/auth/` (depende de T007)
-- [ ] T009 [P] Extrair helper puro `generateSeats(rows, seatsPerRow)` em `apps/api/src/events/seat-layout.ts` — usado pela criacao de evento e pelo seed, sem duplicar logica
-- [ ] T010 [P] Implementar `CatalogModule` em `apps/api/src/catalog/` com `GET /catalog/movies` (usando `now_playing?region=BR` quando nao houver busca) e cache em memoria com TTL de 10 min
-- [ ] T011 Implementar `EventsModule` em `apps/api/src/events/` com criacao (copiando dados do TMDb e gerando assentos), listagem publica, detalhe com mapa e publicacao (depende de T009, T010)
-- [ ] T012 Registrar `AuthModule`, `CatalogModule`, `EventsModule`, `ReservationsModule`, `PaymentsModule`, `TicketsModule` e `GateModule` em `apps/api/src/app.module.ts`, no lugar ja reservado por comentario
+- [X] T004 [P] Criar `ClockService` com metodo `now(): Date` em `apps/api/src/common/clock/clock.service.ts` e `clock.module.ts` global — substitui todo `new Date()` de regra de negocio e torna expiracao testavel sem `sleep` (research.md R11)
+- [X] T005 [P] Definir enum de codigos de erro e classe `AppError` em `apps/api/src/common/errors/app-error.ts`, cobrindo os codigos de `contracts/README.md`
+- [X] T006 Implementar filtro global de excecao em `apps/api/src/common/errors/app-exception.filter.ts` produzindo o envelope `{ error: { code, message, details } }` e registra-lo em `apps/api/src/main.ts` (depende de T005)
+- [X] T007 [P] Implementar `AuthModule` com `POST /auth/register`, `POST /auth/login` e `GET /auth/me` em `apps/api/src/auth/`, usando `bcryptjs` e `@nestjs/jwt`
+- [X] T008 Implementar `JwtAuthGuard`, `RolesGuard`, decorator `@Roles(...)` e `@CurrentUser()` em `apps/api/src/auth/` (depende de T007)
+- [X] T009 [P] Extrair helper puro `generateSeats(rows, seatsPerRow)` em `apps/api/src/events/seat-layout.ts` — usado pela criacao de evento e pelo seed, sem duplicar logica
+- [X] T010 [P] Implementar `CatalogModule` em `apps/api/src/catalog/` com `GET /catalog/movies` (usando `now_playing?region=BR` quando nao houver busca) e cache em memoria com TTL de 10 min
+- [X] T011 Implementar `EventsModule` em `apps/api/src/events/` com criacao (copiando dados do TMDb e gerando assentos), listagem publica, detalhe com mapa e publicacao (depende de T009, T010)
+- [X] T012 Registrar `AuthModule`, `CatalogModule`, `EventsModule`, `ReservationsModule`, `PaymentsModule`, `TicketsModule` e `GateModule` em `apps/api/src/app.module.ts`, no lugar ja reservado por comentario
 - [ ] T013 Ampliar `apps/api/prisma/seed.ts` para criar duas sessoes publicadas em salas diferentes no mesmo dia, com assentos gerados por `generateSeats` (depende de T009, T011) — duas sessoes sao necessarias para `WRONG_EVENT` existir
 - [ ] T014 [P] Criar fetcher em `apps/web/lib/api.ts` que injeta o Bearer, desserializa o envelope de erro em excecao tipada por `code` e centraliza a base URL
 - [ ] T015 [P] Implementar sessao do usuario e telas de entrada em `apps/web/app/(auth)/`, com header que muda conforme o papel
