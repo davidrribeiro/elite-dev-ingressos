@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { AppExceptionFilter } from './common/errors/app-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Envelope unico de erro. Toda falha sai como { error: { code, message } },
+  // e o front decide pelo code.
+  app.useGlobalFilters(new AppExceptionFilter());
 
   await app.listen(process.env.API_PORT ?? 3333);
 }
