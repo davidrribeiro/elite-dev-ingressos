@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
+import { SessionProvider } from '@/lib/session';
 import './globals.css';
 
 const inter = Inter({
@@ -25,7 +26,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       lang="pt-BR"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {/* O header nao mora aqui: as telas de entrada usam o grupo (auth),
+            que e centrado e sem navegacao. Ver app/(app)/layout.tsx. */}
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }
