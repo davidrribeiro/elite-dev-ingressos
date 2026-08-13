@@ -13,7 +13,10 @@
     "db:down": "docker compose down",
     "db:migrate": "npm run prisma:migrate -w api",
     "db:seed": "npm run prisma:seed -w api",
-    "db:studio": "npm run prisma:studio -w api"
+    "db:studio": "npm run prisma:studio -w api",
+    "db:test:prepare": "npm run prisma:migrate:test -w api",
+    "test:e2e": "npm run db:up && npm run db:test:prepare && npm run test:e2e -w api",
+    "test": "npm run test -w api"
   },
   "allowScripts": {
     "prisma@7.9.1": true,
