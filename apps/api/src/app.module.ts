@@ -11,6 +11,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { ClockModule } from './common/clock/clock.module';
 import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
@@ -25,8 +26,8 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     CatalogModule,
     EventsModule,
-    // Entram nas proximas fatias: ReservationsModule, PaymentsModule,
-    // TicketsModule, GateModule.
+    ReservationsModule,
+    // Entram nas proximas fatias: PaymentsModule, TicketsModule, GateModule.
   ],
   controllers: [AppController],
   providers: [
