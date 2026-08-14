@@ -82,22 +82,23 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 ### Tests for User Story 1
 
-- [ ] T017 [P] [US1] Teste de assento disputado em `apps/api/test/reservations-concurrency.e2e-spec.ts`: duas `POST /reservations` simultaneas para o mesmo assento, 10 repeticoes, exigindo exatamente uma 201 e uma `SEATS_TAKEN` em cada rodada
-- [ ] T018 [P] [US1] Teste de expiracao em `apps/api/test/expiration.e2e-spec.ts` usando `ClockService` controlado: reserva vencida some do mapa como ocupada, o assento fica reservavel de novo, e a reserva original consta como `EXPIRED` e nao `CANCELLED`
+- [X] T017 [P] [US1] Teste de assento disputado em `apps/api/test/reservations-concurrency.e2e-spec.ts`: duas `POST /reservations` simultaneas para o mesmo assento, 10 repeticoes, exigindo exatamente uma 201 e uma `SEATS_TAKEN` em cada rodada
+- [X] T018 [P] [US1] Teste de expiracao em `apps/api/test/expiration.e2e-spec.ts` usando `ClockService` controlado: reserva vencida some do mapa como ocupada, o assento fica reservavel de novo, e a reserva original consta como `EXPIRED` e nao `CANCELLED`
 - [ ] T019 [P] [US1] Teste da corrida entre pagamento e varredura em `apps/api/test/expiration.e2e-spec.ts`: pagamento no limite do prazo concorrente com leitura de mapa, exigindo que reserva paga mantenha os assentos ou expire sem emitir — nunca ingresso com assento ja devolvido (research.md R1)
+  — **adiada para a US2**: exige `POST /reservations/:id/payment` (T039), que ainda nao existe. Simular pagamento so para este teste divergiria do codigo real.
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Implementar `releaseExpired(eventId)` em `apps/api/src/reservations/reservations.service.ts`: transacao com `updateMany` de `PENDING` vencidas para `EXPIRED` **seguido** de `deleteMany` das `ReservationSeat` de reservas `EXPIRED` do evento — a ordem inversa abre a corrida descrita em research.md R1
-- [ ] T021 [P] [US1] Criar `CreateReservationDto` em `apps/api/src/reservations/dto/create-reservation.dto.ts` validando 1 a 6 `seatIds` sem repeticao
-- [ ] T022 [US1] Implementar criacao de reserva em `apps/api/src/reservations/reservations.service.ts`: `releaseExpired` primeiro, depois transacao com `reservation.create` e `reservationSeat.createMany`; capturar `P2002` e traduzir em `SEATS_TAKEN` com `details.seatIds` obtidos por leitura de diagnostico apos o rollback (depende de T020, T021)
-- [ ] T023 [US1] Implementar `GET /reservations/:id` em `apps/api/src/reservations/reservations.controller.ts` devolvendo `serverNow`, `lastPayment` e `ticketIds` conforme `contracts/reservations.md`, disparando `releaseExpired` antes de responder
-- [ ] T024 [US1] Implementar `DELETE /reservations/:id` como transicao condicional para `CANCELLED` seguida da remocao das `ReservationSeat`, recusando reserva ja paga com `RESERVATION_NOT_PENDING`
-- [ ] T025 [US1] Chamar `releaseExpired` no inicio de `GET /events/:id` e incluir `serverNow` na resposta, em `apps/api/src/events/events.service.ts` — o criterio de assento ocupado continua sendo apenas a existencia de `ReservationSeat`
-- [ ] T026 [P] [US1] Implementar `apps/web/lib/countdown.ts` calculando o desvio de relogio a partir de `serverNow` uma unica vez e expondo o tempo restante corrigido (research.md R8)
-- [ ] T027 [US1] Implementar o mapa de assentos em `apps/web/app/(cliente)/eventos/[id]/`, com estados livre/ocupado/selecionado, rotulos de fileira, referencia da tela e comportamento definido para telas estreitas
-- [ ] T028 [US1] Implementar o checkout em `apps/web/app/(cliente)/checkout/[reservaId]/` com resumo, contador regressivo e acao de cancelar a reserva (depende de T026)
-- [ ] T029 [US1] Tratar `SEATS_TAKEN` no mapa destacando os assentos em conflito e **preservando os demais selecionados** pelo cliente (depende de T027)
+- [X] T020 [US1] Implementar `releaseExpired(eventId)` em `apps/api/src/reservations/reservations.service.ts`: transacao com `updateMany` de `PENDING` vencidas para `EXPIRED` **seguido** de `deleteMany` das `ReservationSeat` de reservas `EXPIRED` do evento — a ordem inversa abre a corrida descrita em research.md R1
+- [X] T021 [P] [US1] Criar `CreateReservationDto` em `apps/api/src/reservations/dto/create-reservation.dto.ts` validando 1 a 6 `seatIds` sem repeticao
+- [X] T022 [US1] Implementar criacao de reserva em `apps/api/src/reservations/reservations.service.ts`: `releaseExpired` primeiro, depois transacao com `reservation.create` e `reservationSeat.createMany`; capturar `P2002` e traduzir em `SEATS_TAKEN` com `details.seatIds` obtidos por leitura de diagnostico apos o rollback (depende de T020, T021)
+- [X] T023 [US1] Implementar `GET /reservations/:id` em `apps/api/src/reservations/reservations.controller.ts` devolvendo `serverNow`, `lastPayment` e `ticketIds` conforme `contracts/reservations.md`, disparando `releaseExpired` antes de responder
+- [X] T024 [US1] Implementar `DELETE /reservations/:id` como transicao condicional para `CANCELLED` seguida da remocao das `ReservationSeat`, recusando reserva ja paga com `RESERVATION_NOT_PENDING`
+- [X] T025 [US1] Chamar `releaseExpired` no inicio de `GET /events/:id` e incluir `serverNow` na resposta, em `apps/api/src/events/events.service.ts` — o criterio de assento ocupado continua sendo apenas a existencia de `ReservationSeat`
+- [X] T026 [P] [US1] Implementar `apps/web/lib/countdown.ts` calculando o desvio de relogio a partir de `serverNow` uma unica vez e expondo o tempo restante corrigido (research.md R8)
+- [X] T027 [US1] Implementar o mapa de assentos em `apps/web/app/(cliente)/eventos/[id]/`, com estados livre/ocupado/selecionado, rotulos de fileira, referencia da tela e comportamento definido para telas estreitas
+- [X] T028 [US1] Implementar o checkout em `apps/web/app/(cliente)/checkout/[reservaId]/` com resumo, contador regressivo e acao de cancelar a reserva (depende de T026)
+- [X] T029 [US1] Tratar `SEATS_TAKEN` no mapa destacando os assentos em conflito e **preservando os demais selecionados** pelo cliente (depende de T027)
 
 **Checkpoint**: o mapa nunca mente. Todo assento livre aceita reserva, e carrinho abandonado devolve a poltrona sozinho
 
