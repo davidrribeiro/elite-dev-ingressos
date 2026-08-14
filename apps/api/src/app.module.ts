@@ -10,8 +10,10 @@ import { RolesGuard } from './auth/roles.guard';
 import { CatalogModule } from './catalog/catalog.module';
 import { ClockModule } from './common/clock/clock.module';
 import { EventsModule } from './events/events.module';
+import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -27,7 +29,9 @@ import { ReservationsModule } from './reservations/reservations.module';
     CatalogModule,
     EventsModule,
     ReservationsModule,
-    // Entram nas proximas fatias: PaymentsModule, TicketsModule, GateModule.
+    PaymentsModule,
+    TicketsModule,
+    // Entra na proxima fatia: GateModule.
   ],
   controllers: [AppController],
   providers: [
