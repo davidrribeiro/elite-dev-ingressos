@@ -5,6 +5,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { ClockService } from '../common/clock/clock.service';
 import { AppError, ErrorCode } from '../common/errors/app-error';
 import { PrismaService } from '../prisma/prisma.service';
+import { ReservationsService } from '../reservations/reservations.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { ListEventsDto } from './dto/list-events.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -28,6 +29,7 @@ export class EventsService {
     private readonly prisma: PrismaService,
     private readonly catalog: CatalogService,
     private readonly clock: ClockService,
+    private readonly reservations: ReservationsService,
   ) {}
 
   /**
@@ -109,8 +111,11 @@ export class EventsService {
    * status da reserva — e isso que faz "disponivel significa reservavel".
    */
   async findById(id: string) {
-    // TODO(T025, US1): chamar releaseExpired(id) aqui antes de montar o mapa.
-    // Enquanto reservas nao existem, nao ha linha para liberar.
+    // Antes de qualquer leitura: sem isso, um assento preso por reserva
+    // vencida apareceria ocupado para sempre, e "disponivel" deixaria de
+    // significar "reservavel".
+    await this.reservations.releaseExpired(id);
+
     const event = await this.prisma.event.findUnique({
       where: { id },
       select: {
