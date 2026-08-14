@@ -218,4 +218,87 @@ describe('Expiracao de reserva (e2e)', () => {
     });
     expect(reservation.status).toBe(ReservationStatus.PENDING);
   });
+
+  /**
+   * T019, adiada da fase de expiracao porque exigia a rota de pagamento, que
+   * so passou a existir na fase de pagamento. Ver research.md R1: a ordem
+   * das duas escritas em releaseExpired (status antes, assento depois) e o
+   * que evita que um pagamento em curso confirme a compra depois do assento
+   * ja ter voltado ao estoque.
+   */
+  it('pagamento nunca aprova reserva ja vencida, nem disputando com a leitura do mapa', async () => {
+    const organizador = await prisma.user.upsert({
+      where: { email: `organizador${SUFIXO}` },
+      update: {},
+      create: {
+        email: `organizador${SUFIXO}`,
+        name: 'Organizadora',
+        passwordHash: await bcrypt.hash(SENHA, 4),
+        role: Role.ORGANIZER,
+      },
+    });
+
+    const event = await prisma.event.create({
+      data: {
+        organizerId: organizador.id,
+        title: 'Sessao pagamento vs varredura',
+        venue: `Sala Corrida${SUFIXO}`,
+        startsAt: new Date(relogio.now().getTime() + 86_400_000),
+        priceCents: 3000,
+        status: EventStatus.PUBLISHED,
+      },
+    });
+
+    const seat = await prisma.seat.create({
+      data: { eventId: event.id, row: 'A', number: 1 },
+    });
+
+    const criada = await request(app.getHttpServer())
+      .post('/reservations')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ eventId: event.id, seatIds: [seat.id] })
+      .expect(201);
+
+    const reservationId = criada.body.id;
+
+    // Avanca o relogio ANTES da corrida: os dois lados — pagamento e leitura
+    // do mapa — enxergam o mesmo "agora" ja vencido, e disputam a mesma
+    // linha da reserva ao mesmo tempo.
+    relogio.avancarMinutos(PRAZO_MINUTOS + 1);
+
+    const [respostaPagamento, respostaMapa] = await Promise.all([
+      request(app.getHttpServer())
+        .post(`/reservations/${reservationId}/payment`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          cardNumber: '4242424242424242',
+          holderName: 'X',
+          expiry: '12/30',
+          cvv: '123',
+        }),
+      request(app.getHttpServer()).get(`/events/${event.id}`),
+    ]);
+
+    // O pagamento nunca aprova reserva vencida, mesmo sob disputa real.
+    expect(respostaPagamento.status).toBe(409);
+    expect(respostaPagamento.body.error.code).toBe('RESERVATION_EXPIRED');
+
+    // O mapa, lido no mesmo instante, mostra o assento livre.
+    expect(respostaMapa.body.seats[0].status).toBe('AVAILABLE');
+
+    // O que a spec pede para nunca acontecer: ingresso emitido para um
+    // assento que ja voltou ao estoque.
+    const ingressos = await prisma.ticket.count({ where: { reservationId } });
+    expect(ingressos).toBe(0);
+
+    const assentoAindaPreso = await prisma.reservationSeat.count({
+      where: { seatId: seat.id },
+    });
+    expect(assentoAindaPreso).toBe(0);
+
+    const reserva = await prisma.reservation.findUniqueOrThrow({
+      where: { id: reservationId },
+    });
+    expect(reserva.status).toBe(ReservationStatus.EXPIRED);
+  });
 });
