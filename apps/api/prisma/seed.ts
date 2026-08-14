@@ -75,10 +75,23 @@ async function buscarPoster(tmdbId: number): Promise<string | null> {
     const url = new URL(
       `${process.env.TMDB_BASE_URL ?? 'https://api.themoviedb.org/3'}/movie/${tmdbId}`,
     );
-    url.searchParams.set('api_key', apiKey);
     url.searchParams.set('language', 'pt-BR');
 
-    const resposta = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    // Mesma logica de deteccao do CatalogService: a API Key v3 vai na query,
+    // o Read Access Token v4 (um JWT, tres segmentos separados por ponto) vai
+    // no header Authorization. Nao dependemos do CatalogService aqui porque o
+    // seed roda fora do container de injecao do Nest.
+    const headers: HeadersInit = {};
+    if (apiKey.split('.').length === 3) {
+      headers.authorization = `Bearer ${apiKey}`;
+    } else {
+      url.searchParams.set('api_key', apiKey);
+    }
+
+    const resposta = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(5000),
+    });
     if (!resposta.ok) return null;
 
     const filme = (await resposta.json()) as { poster_path?: string | null };

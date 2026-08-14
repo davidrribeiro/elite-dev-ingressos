@@ -81,7 +81,7 @@ export class CatalogService {
     let response: Response;
     try {
       response = await fetch(url, {
-        headers: { accept: 'application/json' },
+        headers: this.buildHeaders(),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch (error) {
@@ -117,15 +117,44 @@ export class CatalogService {
     return value;
   }
 
+  /**
+   * O TMDb tem duas credenciais na mesma tela de configuracoes: a API Key
+   * curta (autenticacao v3, vai na query string) e o API Read Access Token
+   * (autenticacao v4, um JWT, vai no header `Authorization`). As duas
+   * funcionam para as rotas de leitura usadas aqui.
+   *
+   * Em vez de exigir uma das duas e falhar com 401 sem explicar por que,
+   * detecta o formato: um JWT tem tres segmentos separados por ponto: header,
+   * payload e assinatura. Nenhuma API Key v3 tem ponto no meio.
+   */
+  /** Um JWT tem tres segmentos separados por ponto; a API Key v3 nao tem ponto. */
+  private isV4Token(apiKey: string): boolean {
+    return apiKey.split('.').length === 3;
+  }
+
+  private buildHeaders(): HeadersInit {
+    const apiKey = this.config.getOrThrow<string>('TMDB_API_KEY');
+    const headers: HeadersInit = { accept: 'application/json' };
+
+    if (this.isV4Token(apiKey)) {
+      headers.authorization = `Bearer ${apiKey}`;
+    }
+
+    return headers;
+  }
+
   private buildUrl(path: string, params: Record<string, string>): URL {
     const url = new URL(
       `${this.config.getOrThrow<string>('TMDB_BASE_URL')}${path}`,
     );
 
-    url.searchParams.set(
-      'api_key',
-      this.config.getOrThrow<string>('TMDB_API_KEY'),
-    );
+    const apiKey = this.config.getOrThrow<string>('TMDB_API_KEY');
+    // Chave v3: vai na query. Token v4 ja foi anexado como Bearer em
+    // buildHeaders() e nao deve duplicar aqui.
+    if (!this.isV4Token(apiKey)) {
+      url.searchParams.set('api_key', apiKey);
+    }
+
     url.searchParams.set('language', 'pt-BR');
 
     for (const [key, value] of Object.entries(params)) {
