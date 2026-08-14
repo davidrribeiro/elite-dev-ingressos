@@ -12,6 +12,7 @@ import { isApiError } from '@/lib/api-error';
 import { useCountdown } from '@/lib/countdown';
 import { formatarCentavos, formatarData } from '@/lib/money';
 import type { ReservationDetail } from '@/lib/types';
+import { PaymentForm } from './payment-form';
 
 /**
  * Client component: a reserva e dado do dono, autenticado por token no
@@ -98,17 +99,15 @@ export function CheckoutView({ reservaId }: { reservaId: string }) {
           </span>
         </div>
 
-        {reserva.lastPayment?.status === 'DECLINED' && (
-          <Alert tone="warn" title="Ultima tentativa recusada">
-            {reserva.lastPayment.declineReason}
-          </Alert>
-        )}
-
-        {/* O formulario de pagamento entra na proxima fatia (US2). Por ora a
-            reserva se sustenta sozinha: resumo, prazo e cancelamento. */}
-        <Button size="lg" disabled title="Pagamento chega na proxima etapa">
-          Pagar {formatarCentavos(reserva.totalCents)}
-        </Button>
+        <PaymentForm
+          reservaId={reserva.id}
+          totalCents={reserva.totalCents}
+          motivoDaUltimaRecusa={
+            reserva.lastPayment?.status === 'DECLINED'
+              ? reserva.lastPayment.declineReason
+              : null
+          }
+        />
 
         <Button
           variant="ghost"
