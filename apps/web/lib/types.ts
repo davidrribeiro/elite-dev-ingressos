@@ -71,6 +71,31 @@ export interface OrganizerEvent extends EventSummary {
   ticketsIssued: number;
 }
 
+export type ReservationStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED';
+
+export interface ReservationSeatSummary {
+  id: string;
+  row: string;
+  number: number;
+}
+
+export interface LastPayment {
+  status: 'APPROVED' | 'DECLINED';
+  declineReason: string | null;
+}
+
+export interface ReservationDetail {
+  id: string;
+  status: ReservationStatus;
+  totalCents: number;
+  expiresAt: string;
+  serverNow: string;
+  event: { id: string; title: string; venue: string; startsAt: string };
+  seats: ReservationSeatSummary[];
+  lastPayment: LastPayment | null;
+  ticketIds: string[];
+}
+
 export interface CatalogMovie {
   tmdbId: number;
   title: string;

@@ -1,86 +1,70 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
+import { api } from '@/lib/api';
+import { formatarCentavos, formatarData } from '@/lib/money';
+import type { EventListResponse } from '@/lib/types';
 
-/**
- * Provisoria. A listagem de sessoes com busca e filtro e a T027, na fatia da
- * US1; esta pagina existe para a raiz nao ficar com o template do Next e para
- * o avaliador achar as contas de teste sem abrir o README.
- */
-const CONTAS = [
-  { papel: 'Organizador', email: 'organizador@elite.dev', onde: 'cria e publica sessoes' },
-  { papel: 'Cliente', email: 'cliente1@elite.dev', onde: 'reserva, paga e recebe ingresso' },
-  { papel: 'Cliente', email: 'cliente2@elite.dev', onde: 'segundo cliente, para disputar poltrona' },
-  { papel: 'Portaria', email: 'portaria@elite.dev', onde: 'valida ingresso na entrada' },
-];
+// Nunca estatica: disponibilidade de sessao muda a cada reserva, e sem isso
+// o Next tentaria pre-renderizar esta pagina em build time, batendo na API
+// antes dela sequer estar no ar.
+export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { events } = await api.get<EventListResponse>('/events', undefined, {
+    cache: 'no-store', // disponibilidade de assento muda a cada reserva
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-ink">
-          Plataforma de eventos e ingressos
+          Sessoes em cartaz
         </h1>
-        <p className="mt-1 max-w-2xl text-muted">
-          O organizador monta a sessao a partir do catalogo do TMDb, o cliente
-          escolhe a poltrona no mapa e paga de forma simulada, e a portaria
-          valida o ingresso na entrada.
+        <p className="mt-1 text-muted">
+          Escolha uma sessao para ver o mapa de assentos.
         </p>
       </div>
 
-      <Card>
-        <CardHeader
-          title="Contas de teste"
-          aside={<Badge>senha: elite123</Badge>}
-        />
-        <CardBody className="p-0">
-          <table className="w-full">
-            <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-faint">
-              <tr>
-                <th className="px-4 py-2 font-medium">Papel</th>
-                <th className="px-4 py-2 font-medium">E-mail</th>
-                <th className="hidden px-4 py-2 font-medium sm:table-cell">
-                  O que faz
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {CONTAS.map((conta) => (
-                <tr
-                  key={conta.email}
-                  className="border-b border-line last:border-0"
-                >
-                  <td className="px-4 py-2 text-muted">{conta.papel}</td>
-                  <td className="px-4 py-2 font-mono text-ink">{conta.email}</td>
-                  <td className="hidden px-4 py-2 text-muted sm:table-cell">
-                    {conta.onde}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader title="Em construcao" />
-        <CardBody className="text-muted">
-          <p>
-            A listagem de sessoes, o mapa de assentos e o checkout entram na
-            proxima fatia. Por enquanto a API ja serve{' '}
-            <code className="rounded-sm bg-surface-sunken px-1 font-mono text-ink">
-              GET /events
-            </code>{' '}
-            com as duas sessoes semeadas.
-          </p>
-          <p className="mt-2">
-            <Link href="/entrar" className="font-medium text-accent hover:underline">
-              Entrar
-            </Link>{' '}
-            para ver o header mudar conforme o papel da conta.
-          </p>
-        </CardBody>
-      </Card>
+      {events.length === 0 ? (
+        <p className="text-muted">Nenhuma sessao publicada no momento.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {events.map((event) => (
+            <Link
+              key={event.id}
+              href={`/eventos/${event.id}`}
+              className="group overflow-hidden rounded-lg border border-line bg-surface transition-colors hover:border-accent"
+            >
+              <div className="aspect-2/3 overflow-hidden bg-surface-sunken">
+                {event.posterUrl ? (
+                  <Image
+                    src={event.posterUrl}
+                    alt={event.title}
+                    width={200}
+                    height={300}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-faint">
+                    Sem poster
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 p-3">
+                <p className="truncate font-medium text-ink group-hover:text-accent">
+                  {event.title}
+                </p>
+                <p className="truncate text-muted">{event.venue}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted">{formatarData(event.startsAt)}</span>
+                  <Badge tone="accent">{formatarCentavos(event.priceCents)}</Badge>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
