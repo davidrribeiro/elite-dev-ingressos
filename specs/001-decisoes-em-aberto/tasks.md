@@ -84,7 +84,7 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 - [X] T017 [P] [US1] Teste de assento disputado em `apps/api/test/reservations-concurrency.e2e-spec.ts`: duas `POST /reservations` simultaneas para o mesmo assento, 10 repeticoes, exigindo exatamente uma 201 e uma `SEATS_TAKEN` em cada rodada
 - [X] T018 [P] [US1] Teste de expiracao em `apps/api/test/expiration.e2e-spec.ts` usando `ClockService` controlado: reserva vencida some do mapa como ocupada, o assento fica reservavel de novo, e a reserva original consta como `EXPIRED` e nao `CANCELLED`
-- [ ] T019 [P] [US1] Teste da corrida entre pagamento e varredura em `apps/api/test/expiration.e2e-spec.ts`: pagamento no limite do prazo concorrente com leitura de mapa, exigindo que reserva paga mantenha os assentos ou expire sem emitir — nunca ingresso com assento ja devolvido (research.md R1)
+- [X] T019 [P] [US1] Teste da corrida entre pagamento e varredura em `apps/api/test/expiration.e2e-spec.ts`: pagamento no limite do prazo concorrente com leitura de mapa, exigindo que reserva paga mantenha os assentos ou expire sem emitir — nunca ingresso com assento ja devolvido (research.md R1)
   — **adiada para a US2**: exige `POST /reservations/:id/payment` (T039), que ainda nao existe. Simular pagamento so para este teste divergiria do codigo real.
 
 ### Implementation for User Story 1
@@ -112,26 +112,26 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 ### Tests for User Story 2
 
-- [ ] T030 [P] [US2] Teste unitario da tabela de cartoes em `apps/api/src/payments/simulated-gateway.spec.ts`, cobrindo as quatro linhas de `contracts/payments.md` e a normalizacao de espacos e hifens
-- [ ] T031 [P] [US2] Teste unitario de `ticket-code` em `apps/api/src/tickets/ticket-code.spec.ts`: codigo gerado tem 16 caracteres do alfabeto Crockford, e a normalizacao converte caixa baixa, hifens, `I`/`L` para `1` e `O` para `0`
-- [ ] T032 [P] [US2] Teste de clique duplo em `apps/api/test/payment-concurrency.e2e-spec.ts`: duas `POST /reservations/:id/payment` simultaneas com o cartao aprovado, 10 repeticoes, exigindo exatamente uma aprovacao e um unico conjunto de ingressos
-- [ ] T033 [P] [US2] Teste de vazamento em `apps/api/test/tickets.e2e-spec.ts`: a resposta de `GET /public/tickets/:shareToken` nao contem o `code` em nenhum campo, em nenhuma profundidade
+- [X] T030 [P] [US2] Teste unitario da tabela de cartoes em `apps/api/src/payments/simulated-gateway.spec.ts`, cobrindo as quatro linhas de `contracts/payments.md` e a normalizacao de espacos e hifens
+- [X] T031 [P] [US2] Teste unitario de `ticket-code` em `apps/api/src/tickets/ticket-code.spec.ts`: codigo gerado tem 16 caracteres do alfabeto Crockford, e a normalizacao converte caixa baixa, hifens, `I`/`L` para `1` e `O` para `0`
+- [X] T032 [P] [US2] Teste de clique duplo em `apps/api/test/payment-concurrency.e2e-spec.ts`: duas `POST /reservations/:id/payment` simultaneas com o cartao aprovado, 10 repeticoes, exigindo exatamente uma aprovacao e um unico conjunto de ingressos
+- [X] T033 [P] [US2] Teste de vazamento em `apps/api/test/tickets.e2e-spec.ts`: a resposta de `GET /public/tickets/:shareToken` nao contem o `code` em nenhum campo, em nenhuma profundidade
 
 ### Implementation for User Story 2
 
-- [ ] T034 [P] [US2] Implementar `apps/api/src/payments/simulated-gateway.ts` como funcao pura numero de cartao → `{ status, declineReason }`, sem dependencia de Nest nem de banco
-- [ ] T035 [P] [US2] Implementar `apps/api/src/tickets/ticket-code.ts` com geracao (`randomBytes(10)` em base32 Crockford, agrupado em quatro) e normalizacao para consulta (research.md R4)
-- [ ] T036 [US2] Implementar `TicketsService.issueForReservation` em `apps/api/src/tickets/tickets.service.ts`, emitindo um ingresso por assento com `code` e `shareToken` distintos (depende de T035)
-- [ ] T037 [US2] Implementar `PaymentsService` em `apps/api/src/payments/payments.service.ts`: transicao condicional `PENDING → PAID` com `expiresAt > agora`, emissao na mesma transacao quando `count === 1`, e registro de `Payment` sem persistir numero de cartao (depende de T034, T036)
-- [ ] T038 [US2] Implementar o caminho de recusa em `PaymentsService`: grava `Payment` com `DECLINED` e motivo, mantem a reserva `PENDING` e devolve `expiresAt` inalterado
-- [ ] T039 [US2] Implementar `POST /reservations/:id/payment` em `apps/api/src/payments/payments.controller.ts` respondendo 200 tanto para aprovacao quanto para recusa, e mapeando `RESERVATION_EXPIRED`, `RESERVATION_ALREADY_PAID` (com `details.ticketIds`), `RESERVATION_NOT_PENDING` e `INVALID_CARD_FORMAT` (depende de T037, T038)
-- [ ] T040 [US2] Implementar `GET /me/tickets` e `GET /tickets/:id` em `apps/api/src/tickets/tickets.controller.ts` com `select` explicito por rota — a listagem nao carrega `code`
-- [ ] T041 [US2] Implementar `GET /public/tickets/:shareToken` com projecao que **nunca** inclui `code`, garantida pelo `select` e nao por remocao posterior de campo
-- [ ] T042 [US2] Implementar o formulario de pagamento em `apps/web/app/(cliente)/checkout/[reservaId]/`, com a tabela de cartoes de teste visivel na propria tela e aviso de que os demais campos sao decorativos
-- [ ] T043 [US2] Implementar o estado de recusa no checkout: motivo em destaque, assentos preservados, contador seguindo do mesmo ponto e acao clara de tentar outro cartao
-- [ ] T044 [US2] Implementar o estado de aprovacao levando aos ingressos emitidos
-- [ ] T045 [US2] Implementar "Meus ingressos" em `apps/web/app/(cliente)/ingressos/`, renderizando o QR como SVG em Server Component via `qrcode.toString({ type: 'svg' })` (research.md R7)
-- [ ] T046 [US2] Implementar a acao de copiar o link e a pagina publica `apps/web/app/i/[shareToken]/`, exibindo filme, sessao e poltrona sem o codigo do QR
+- [X] T034 [P] [US2] Implementar `apps/api/src/payments/simulated-gateway.ts` como funcao pura numero de cartao → `{ status, declineReason }`, sem dependencia de Nest nem de banco
+- [X] T035 [P] [US2] Implementar `apps/api/src/tickets/ticket-code.ts` com geracao (`randomBytes(10)` em base32 Crockford, agrupado em quatro) e normalizacao para consulta (research.md R4)
+- [X] T036 [US2] Implementar `TicketsService.issueForReservation` em `apps/api/src/tickets/tickets.service.ts`, emitindo um ingresso por assento com `code` e `shareToken` distintos (depende de T035)
+- [X] T037 [US2] Implementar `PaymentsService` em `apps/api/src/payments/payments.service.ts`: transicao condicional `PENDING → PAID` com `expiresAt > agora`, emissao na mesma transacao quando `count === 1`, e registro de `Payment` sem persistir numero de cartao (depende de T034, T036)
+- [X] T038 [US2] Implementar o caminho de recusa em `PaymentsService`: grava `Payment` com `DECLINED` e motivo, mantem a reserva `PENDING` e devolve `expiresAt` inalterado
+- [X] T039 [US2] Implementar `POST /reservations/:id/payment` em `apps/api/src/payments/payments.controller.ts` respondendo 200 tanto para aprovacao quanto para recusa, e mapeando `RESERVATION_EXPIRED`, `RESERVATION_ALREADY_PAID` (com `details.ticketIds`), `RESERVATION_NOT_PENDING` e `INVALID_CARD_FORMAT` (depende de T037, T038)
+- [X] T040 [US2] Implementar `GET /me/tickets` e `GET /tickets/:id` em `apps/api/src/tickets/tickets.controller.ts` com `select` explicito por rota — a listagem nao carrega `code`
+- [X] T041 [US2] Implementar `GET /public/tickets/:shareToken` com projecao que **nunca** inclui `code`, garantida pelo `select` e nao por remocao posterior de campo
+- [X] T042 [US2] Implementar o formulario de pagamento em `apps/web/app/(cliente)/checkout/[reservaId]/`, com a tabela de cartoes de teste visivel na propria tela e aviso de que os demais campos sao decorativos
+- [X] T043 [US2] Implementar o estado de recusa no checkout: motivo em destaque, assentos preservados, contador seguindo do mesmo ponto e acao clara de tentar outro cartao
+- [X] T044 [US2] Implementar o estado de aprovacao levando aos ingressos emitidos
+- [X] T045 [US2] Implementar "Meus ingressos" em `apps/web/app/(cliente)/ingressos/`, renderizando o QR como SVG em Server Component via `qrcode.toString({ type: 'svg' })` (research.md R7)
+- [X] T046 [US2] Implementar a acao de copiar o link e a pagina publica `apps/web/app/i/[shareToken]/`, exibindo filme, sessao e poltrona sem o codigo do QR
 
 **Checkpoint**: o fluxo de compra fecha de ponta a ponta, incluindo o caminho de erro. Cliente sai com ingresso e QR na mao
 
