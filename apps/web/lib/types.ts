@@ -96,6 +96,41 @@ export interface ReservationDetail {
   ticketIds: string[];
 }
 
+interface TicketEventSummary {
+  id: string;
+  title: string;
+  venue: string;
+  startsAt: string;
+  posterUrl: string | null;
+}
+
+interface TicketSeatSummary {
+  row: string;
+  number: number;
+}
+
+export interface TicketSummary {
+  id: string;
+  usedAt: string | null;
+  event: TicketEventSummary;
+  seat: TicketSeatSummary;
+}
+
+/** So o dono ve isto — carrega o `code` que abre a portaria. */
+export interface TicketDetail extends TicketSummary {
+  code: string;
+  shareToken: string;
+}
+
+/** Vista publica do link compartilhado. Sem `code`, com o nome do titular. */
+export interface PublicTicket {
+  id: string;
+  usedAt: string | null;
+  holder: string;
+  event: Omit<TicketEventSummary, 'id'>;
+  seat: TicketSeatSummary;
+}
+
 export interface CatalogMovie {
   tmdbId: number;
   title: string;
