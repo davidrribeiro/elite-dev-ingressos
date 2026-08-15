@@ -113,57 +113,65 @@ export class PaymentsService {
    * ingressos que a vencedora acabou de emitir. Ver research.md R3.
    */
   private async approve(reservationId: string, amountCents: number) {
-    return this.prisma.$transaction(async (tx) => {
-      const agora = this.clock.now();
+    // timeout acima do padrao de 5s: a perdedora da corrida fica bloqueada
+    // esperando o lock de linha da vencedora ate ela commitar, e so depois
+    // ainda consulta o status atual para montar o erro certo. Sob carga (a
+    // suite inteira de testes de corrida rodando em sequencia), 5s e curto
+    // o suficiente para estourar por fila de conexao, nao por bug.
+    return this.prisma.$transaction(
+      async (tx) => {
+        const agora = this.clock.now();
 
-      const transicao = await tx.reservation.updateMany({
-        where: {
-          id: reservationId,
-          status: ReservationStatus.PENDING,
-          expiresAt: { gt: agora },
-        },
-        data: { status: ReservationStatus.PAID },
-      });
-
-      if (transicao.count === 0) {
-        const atual = await tx.reservation.findUniqueOrThrow({
-          where: { id: reservationId },
-          select: { status: true },
+        const transicao = await tx.reservation.updateMany({
+          where: {
+            id: reservationId,
+            status: ReservationStatus.PENDING,
+            expiresAt: { gt: agora },
+          },
+          data: { status: ReservationStatus.PAID },
         });
-        throw await this.errorForStatus(tx, reservationId, atual.status);
-      }
 
-      await tx.payment.create({
-        data: {
+        if (transicao.count === 0) {
+          const atual = await tx.reservation.findUniqueOrThrow({
+            where: { id: reservationId },
+            select: { status: true },
+          });
+          throw await this.errorForStatus(tx, reservationId, atual.status);
+        }
+
+        await tx.payment.create({
+          data: {
+            reservationId,
+            status: PaymentStatus.APPROVED,
+            amountCents,
+          },
+        });
+
+        const [assentos, reserva] = await Promise.all([
+          tx.reservationSeat.findMany({
+            where: { reservationId },
+            select: { seatId: true },
+          }),
+          tx.reservation.findUniqueOrThrow({
+            where: { id: reservationId },
+            select: { eventId: true },
+          }),
+        ]);
+
+        const tickets = await this.tickets.issueForReservation(tx, {
           reservationId,
-          status: PaymentStatus.APPROVED,
-          amountCents,
-        },
-      });
+          eventId: reserva.eventId,
+          seatIds: assentos.map((a) => a.seatId),
+        });
 
-      const [assentos, reserva] = await Promise.all([
-        tx.reservationSeat.findMany({
-          where: { reservationId },
-          select: { seatId: true },
-        }),
-        tx.reservation.findUniqueOrThrow({
-          where: { id: reservationId },
-          select: { eventId: true },
-        }),
-      ]);
-
-      const tickets = await this.tickets.issueForReservation(tx, {
-        reservationId,
-        eventId: reserva.eventId,
-        seatIds: assentos.map((a) => a.seatId),
-      });
-
-      return {
-        status: 'APPROVED' as const,
-        reservationId,
-        tickets: tickets.map((t) => ({ id: t.id, seat: t.seat })),
-      };
-    });
+        return {
+          status: 'APPROVED' as const,
+          reservationId,
+          tickets: tickets.map((t) => ({ id: t.id, seat: t.seat })),
+        };
+      },
+      { timeout: 10_000 },
+    );
   }
 
   /**
