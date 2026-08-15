@@ -10,6 +10,7 @@ import { RolesGuard } from './auth/roles.guard';
 import { CatalogModule } from './catalog/catalog.module';
 import { ClockModule } from './common/clock/clock.module';
 import { EventsModule } from './events/events.module';
+import { GateModule } from './gate/gate.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReservationsModule } from './reservations/reservations.module';
@@ -31,7 +32,7 @@ import { TicketsModule } from './tickets/tickets.module';
     ReservationsModule,
     PaymentsModule,
     TicketsModule,
-    // Entra na proxima fatia: GateModule.
+    GateModule,
   ],
   controllers: [AppController],
   providers: [
