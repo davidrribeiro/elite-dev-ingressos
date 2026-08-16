@@ -87,7 +87,20 @@ describe('Sessoes (e2e)', () => {
   });
 
   async function limpar() {
-    // Os assentos caem por cascade junto com o evento.
+    // Ticket, Payment e Reservation nao tem onDelete: Cascade a partir de
+    // Event — precisam sair primeiro. Os assentos caem por cascade junto
+    // com o evento.
+    await prisma.ticket.deleteMany({
+      where: { event: { organizer: { email: { endsWith: SUFIXO } } } },
+    });
+    await prisma.payment.deleteMany({
+      where: {
+        reservation: { event: { organizer: { email: { endsWith: SUFIXO } } } },
+      },
+    });
+    await prisma.reservation.deleteMany({
+      where: { event: { organizer: { email: { endsWith: SUFIXO } } } },
+    });
     await prisma.event.deleteMany({
       where: { organizer: { email: { endsWith: SUFIXO } } },
     });
@@ -228,5 +241,100 @@ describe('Sessoes (e2e)', () => {
       .expect(200);
 
     expect(body).toHaveLength(0);
+  });
+
+  describe('cancelamento', () => {
+    it('outro organizador nao cancela sessao alheia', async () => {
+      const { body } = await request(app.getHttpServer())
+        .post(`/events/${eventoId}/cancel`)
+        .set('Authorization', `Bearer ${tokenOutroOrganizador}`)
+        .expect(403);
+
+      expect(body.error.code).toBe('FORBIDDEN');
+    });
+
+    it('sessao com ingresso vendido nao pode ser cancelada', async () => {
+      // Reserva e paga um assento da sessao ja publicada, so para gerar o
+      // ingresso que deve bloquear o cancelamento.
+      const mapa = await request(app.getHttpServer())
+        .get(`/events/${eventoId}`)
+        .expect(200);
+      const assentoLivre = mapa.body.seats.find(
+        (s: { status: string }) => s.status === 'AVAILABLE',
+      );
+
+      const reserva = await request(app.getHttpServer())
+        .post('/reservations')
+        .set('Authorization', `Bearer ${tokenCliente}`)
+        .send({ eventId: eventoId, seatIds: [assentoLivre.id] })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/reservations/${reserva.body.id}/payment`)
+        .set('Authorization', `Bearer ${tokenCliente}`)
+        .send({
+          cardNumber: '4242424242424242',
+          holderName: 'X',
+          expiry: '12/30',
+          cvv: '123',
+        })
+        .expect(200);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/events/${eventoId}/cancel`)
+        .set('Authorization', `Bearer ${tokenOrganizador}`)
+        .expect(409);
+
+      expect(body.error.code).toBe('EVENT_HAS_TICKETS');
+      expect(body.error.details.ticketCount).toBe(1);
+
+      // A sessao continua publicada — o bloqueio nao deixa rastro de mudanca.
+      const evento = await prisma.event.findUniqueOrThrow({
+        where: { id: eventoId },
+      });
+      expect(evento.status).toBe('PUBLISHED');
+    });
+
+    it('sessao sem ingresso e cancelada e some da listagem publica', async () => {
+      const nova = await request(app.getHttpServer())
+        .post('/events')
+        .set('Authorization', `Bearer ${tokenOrganizador}`)
+        .send({ ...novaSessao, venue: `Sala Cancelamento${SUFIXO}` })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/events/${nova.body.id}/publish`)
+        .set('Authorization', `Bearer ${tokenOrganizador}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post(`/events/${nova.body.id}/cancel`)
+        .set('Authorization', `Bearer ${tokenOrganizador}`)
+        .expect(204);
+
+      const evento = await prisma.event.findUniqueOrThrow({
+        where: { id: nova.body.id },
+      });
+      expect(evento.status).toBe('CANCELLED');
+
+      const listagem = await request(app.getHttpServer())
+        .get('/events')
+        .expect(200);
+      expect(
+        listagem.body.events.map((e: { id: string }) => e.id),
+      ).not.toContain(nova.body.id);
+
+      // Sessao cancelada tambem recusa reserva nova.
+      const mapa = await request(app.getHttpServer())
+        .get(`/events/${nova.body.id}`)
+        .expect(200);
+
+      const { body: erro } = await request(app.getHttpServer())
+        .post('/reservations')
+        .set('Authorization', `Bearer ${tokenCliente}`)
+        .send({ eventId: nova.body.id, seatIds: [mapa.body.seats[0].id] })
+        .expect(409);
+      expect(erro.error.code).toBe('EVENT_NOT_PUBLISHED');
+    });
   });
 });

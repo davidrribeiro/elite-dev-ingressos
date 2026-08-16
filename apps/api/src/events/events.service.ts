@@ -206,6 +206,37 @@ export class EventsService {
   }
 
   /**
+   * Cancela a sessao, bloqueado quando ja houver ingresso emitido.
+   *
+   * A checagem e uma contagem, nao uma corrida a se preocupar: o caminho que
+   * emitiria um ingresso durante o cancelamento exigiria uma reserva
+   * `PENDING` sendo paga no mesmo instante, e o pior caso e o organizador
+   * repetir o cancelamento depois de ver o bloqueio — nao um ingresso
+   * cancelado por baixo dos panos.
+   */
+  async cancel(organizer: AuthenticatedUser, id: string): Promise<void> {
+    await this.assertOwnership(organizer, id);
+
+    const ticketCount = await this.prisma.ticket.count({
+      where: { eventId: id },
+    });
+
+    if (ticketCount > 0) {
+      throw new AppError(
+        ErrorCode.EVENT_HAS_TICKETS,
+        `Esta sessao ja vendeu ${ticketCount} ${ticketCount === 1 ? 'ingresso' : 'ingressos'} e nao pode ser cancelada.`,
+        409,
+        { ticketCount },
+      );
+    }
+
+    await this.prisma.event.update({
+      where: { id },
+      data: { status: EventStatus.CANCELLED },
+    });
+  }
+
+  /**
    * 403 e nao 404 quando o evento existe mas e de outro organizador: esconder a
    * existencia nao protege nada aqui e confunde quem esta depurando.
    */
