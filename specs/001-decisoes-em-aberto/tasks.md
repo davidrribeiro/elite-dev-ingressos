@@ -192,8 +192,8 @@ demonstracao dos requisitos obrigatorios do desafio.
 - [X] T065 [P] Escrever no `README.md` os cartoes de teste, as contas semeadas, a exigencia de `https` para a camera e o que reconhecidamente nao funciona
 - [X] T066 Verificar que numero de cartao nao aparece em log nem em resposta de erro, em `apps/api/src/payments/` e no filtro global
 - [X] T067 [P] Avaliar a troca de `@@index([status, expiresAt])` por `[eventId, status, expiresAt]` em `apps/api/prisma/schema.prisma` (research.md R10) — desempenho, nao corretude
-- [ ] T068 Percorrer os quatro cenarios de [quickstart.md](./quickstart.md) com o banco recem-semeado, do zero
-- [ ] T069 Rodar a checagem de regressao final de [quickstart.md](./quickstart.md)
+- [X] T068 Percorrer os quatro cenarios de [quickstart.md](./quickstart.md) com o banco recem-semeado, do zero
+- [X] T069 Rodar a checagem de regressao final de [quickstart.md](./quickstart.md)
 
 ---
 
