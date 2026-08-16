@@ -62,6 +62,16 @@ export class EventsController {
   ) {
     return this.events.publish(user, id);
   }
+
+  @Roles(Role.ORGANIZER)
+  @Post(':id/cancel')
+  @HttpCode(204)
+  async cancel(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    await this.events.cancel(user, id);
+  }
 }
 
 /** Painel do organizador. Rota separada para nao colidir com `GET /events/:id`. */
