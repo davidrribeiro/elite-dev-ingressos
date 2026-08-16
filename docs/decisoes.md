@@ -40,9 +40,41 @@ mas exige SQL cru na migration, fora do schema do Prisma.
 `PENDING` nasce com `expiresAt`. Sem isso, um carrinho abandonado prende o
 assento para sempre.
 
-**A decidir:** expirar preguicosamente (ao ler o mapa, tratar reservas vencidas
-como livres) ou com job periodico. O modo preguicoso evita infraestrutura de
-agendamento; o job mantem o banco limpo. Escrever aqui qual foi e por que.
+**Escolha:** nem preguicoso puro, nem job periodico — liberacao sob demanda,
+em escrita, disparada pela propria requisicao que precisa da resposta
+correta (`GET /events/:id`, `POST /reservations`, `POST .../payment`). Antes
+de responder, a rota roda duas escritas em transacao: `UPDATE reservation SET
+status = 'EXPIRED' WHERE status = 'PENDING' AND expiresAt < agora`, e so
+depois `DELETE reservation_seats` das reservas que acabaram de virar
+`EXPIRED`.
+
+**A ordem das duas escritas nao e estilo, e a razao de funcionar.** A trava do
+assento e a existencia da linha em `ReservationSeat`; apagar essa linha e o
+unico jeito de devolver o lugar ao mapa. Se o `DELETE` viesse antes do
+`UPDATE`, existiria uma janela real: o assento some da trava um instante
+antes da reserva ser marcada como vencida, e um pagamento em curso naquele
+instante poderia confirmar a compra depois do lugar ja ter voltado ao
+estoque — ingresso emitido para poltrona ja revendida. Na ordem escolhida,
+pagamento e varredura disputam a mesma linha da reserva sob o mesmo padrao
+de escrita condicional usado em todo o projeto: um dos dois vence, o outro
+reavalia o `WHERE` depois do commit e nao encontra nada para mudar.
+
+**Por que nao preguicoso puro (so na leitura, sem escrever):** nao funciona
+neste schema. A trava e a *existencia* da linha; filtrar na leitura mostraria
+o assento livre e o `INSERT` seguinte bateria na unicidade para sempre — o
+assento pareceria livre e seria impossivel de comprar.
+
+**Por que nao job periodico:** infraestrutura de agendamento (`@nestjs/schedule`,
+`pg_cron`, worker separado) para um resultado que a liberacao sob demanda
+entrega sem processo a mais rodando. A janela de um job tambem nunca fecha
+de verdade — sempre existe o intervalo entre o vencimento e a proxima
+execucao em que o mapa mente; a liberacao sob demanda nao tem essa janela,
+porque quem le o mapa ja le depois da limpeza.
+
+**Custo aceito:** duas escritas extras em cada leitura de mapa. Irrelevante na
+escala deste projeto; se um dia incomodar, o indice
+`@@index([eventId, status, expiresAt])` (hoje so `[status, expiresAt]`)
+resolve sem mudar a logica.
 
 ---
 
@@ -58,6 +90,19 @@ mais segura.
 
 **Nao usar:** id sequencial ou o UUID do ticket. Sequencial e adivinhavel; o
 UUID vaza em URLs e logs.
+
+**Formato do codigo:** base32 Crockford (alfabeto sem `I`, `L`, `O`, `U`), 16
+caracteres a partir de 80 bits de `randomBytes(10)`, exibido em quatro grupos
+de quatro (`A1B2-C3D4-E5F6-G7H8`).
+
+**Descartado:** base64url, que e o formato mais obvio para um token aleatorio.
+O codigo tem dois consumidores com necessidades opostas — o QR nao liga para
+o formato, mas a digitacao manual na portaria e requisito explicito do
+enunciado, nao alternativa decorativa. Base64url usa 22 caracteres com caixa
+mista e `-`/`_`; alguem transcrevendo `l1I` de um ingresso amassado erra sem
+perceber. Crockford resolve isso descartando de proposito os quatro simbolos
+mais confundiveis visualmente, e a normalizacao de entrada (`I`/`L` -> `1`,
+`O` -> `0`) fecha o ciclo aceitando o que a pessoa provavelmente quis dizer.
 
 ---
 
@@ -119,7 +164,120 @@ redor treme a cada segundo do contador.
 
 ---
 
-## _(seguir preenchendo)_
+## Pagamento sem chave de idempotencia
 
-Estrutura de pastas do front, tratamento de erro, o que foi feito com IA e o
-que foi feito na mao.
+**Escolha:** clique duplo em "pagar" nao usa chave de idempotencia nem trava
+no botao como unica defesa. A propria transicao de estado e o portao:
+`UPDATE reservations SET status = 'PAID' WHERE id = ? AND status = 'PENDING'
+AND expires_at > agora`, decidida pelo numero de linhas afetadas.
+
+**Por que:** duas requisicoes simultaneas de pagamento disputam a mesma
+linha da reserva. Exatamente uma consegue `count === 1` e emite os
+ingressos; a outra recebe `count === 0`, verifica que a reserva ja esta
+`PAID` e responde apontando para os ingressos que a vencedora acabou de
+criar — do ponto de vista de quem clicou duas vezes, o desfecho e o
+correto, sem cobranca duplicada. E o mesmo padrao usado na trava do assento
+e na validacao da portaria: nunca ler, decidir em `if` e so depois escrever.
+
+**Descartado:** chave de idempotencia enviada pelo cliente, ou
+`SELECT ... FOR UPDATE` explicito. As duas resolveriam o mesmo problema com
+mais infraestrutura (tabela de chaves usadas, ou SQL cru fora do Prisma) para
+um resultado que a maquina de estados ja entrega de graca.
+
+Bonus dessa escolha: ela tambem cobre a corrida entre um pagamento em curso
+e a varredura de reservas vencidas (secao "Reserva expira" acima) — as duas
+disputam a mesma linha, pelo mesmo mecanismo.
+
+---
+
+## Leitura do QR na portaria
+
+**Escolha:** `@zxing/browser`, que devolve o texto decodificado por callback
+e deixa a interface — camera, moldura, mensagens de estado — inteiramente
+por conta de quem escreve a tela.
+
+**Descartado:** `html5-qrcode`, mais rapido de plugar, mas que monta a
+propria UI de scanner com botoes e bordas prontos. O enunciado penaliza
+explicitamente interface que "sai pronta da ferramenta"; uma lib que impoe
+sua propria caixa de video teria que ser combatida com CSS por cima depois
+— mais trabalho que escrever o proprio componente de video desde o inicio.
+
+**Limitacao aceita e documentada:** `getUserMedia` (a API de camera do
+navegador) so funciona em contexto seguro — `https` ou `localhost`. Testar
+pelo IP da maquina na rede local (celular na mesma rede, por exemplo) faz o
+navegador recusar a camera silenciosamente; **isso e comportamento do
+navegador, nao defeito da aplicacao**. A tela de validar explica isso quando
+a permissao falha, e a digitacao manual continua funcionando — ela nao e
+alternativa de segunda classe, e o caminho que garante a portaria operar
+mesmo sem camera.
+
+---
+
+## Estrutura de pastas do front
+
+O plano original previa tres areas separadas — `app/(cliente)/`,
+`app/(organizador)/`, `app/portaria/`. Na implementacao, cliente e
+organizador foram unificados num unico grupo `app/(app)/`, com a portaria
+por baixo do mesmo grupo (`app/(app)/portaria/`).
+
+**Por que:** as tres areas compartilham o mesmo cabecalho (`SiteHeader`), que
+ja muda de conteudo conforme o papel logado — manter tres layouts quase
+identicos so para variar o menu seria duplicacao sem beneficio. O grupo de
+rotas do Next nao aparece na URL, entao `(app)/organizador/page.tsx` continua
+respondendo em `/organizador` normalmente.
+
+O grupo `(auth)/` (telas de entrar e cadastrar) e `app/i/` (link publico do
+ingresso) continuam separados: essas duas telas nao tem cabecalho nenhum, por
+nao pressuporem sessao.
+
+---
+
+## Tratamento de erro
+
+**Escolha:** toda falha da API sai no mesmo formato,
+`{ error: { code, message, details? } }`, produzido por um filtro global
+unico (`AppExceptionFilter`). O front decide pelo `code`, que e estavel;
+`message` e texto para humano e pode mudar sem quebrar nada do outro lado.
+
+**Por que agora e nao depois:** essa decisao foi tomada antes de qualquer
+tela existir, de proposito. Retrofitar o formato de erro depois de seis
+telas prontas significaria reabrir cada uma para trocar o tratamento.
+
+**Numero de cartao nunca atravessa essa fronteira:** o filtro de excecao so
+registra `message` e `stack` do erro nao previsto, nunca o corpo da
+requisicao; `PaymentsService` nao loga nada; nao existe coluna de cartao no
+banco (`docs/decisoes.md`, secao de pagamento). Testado explicitamente —
+`apps/api/test/payments.e2e-spec.ts`, "numero de cartao nunca aparece no log
+de erro nem na resposta".
+
+---
+
+## Uso de IA
+
+Este projeto foi construido com Claude Code (modelo Sonnet 5) do inicio ao
+fim, usando o fluxo do Spec Kit (`speckit-specify` -> `speckit-plan` ->
+`speckit-tasks` -> `speckit-implement`), com os artefatos de processo
+versionados em `specs/001-decisoes-em-aberto/` e a constituicao do projeto em
+`.specify/memory/constitution.md`.
+
+**O que a IA fez:** toda a especificacao (`spec.md`, `research.md`,
+`data-model.md`, os contratos), o desenho tecnico, e praticamente todo o
+codigo — schema, backend, frontend, testes automatizados e este documento.
+As decisoes tecnicas registradas neste arquivo (ordem das escritas na
+expiracao, formato do codigo do ingresso, ausencia de chave de idempotencia,
+escolha da lib de camera) foram propostas, justificadas e implementadas pela
+IA, com alternativas descartadas explicitadas para o autor poder discordar.
+
+**O que foi decisao do autor, nao da ferramenta:** o partido visual da
+interface ("Bilheteria" — claro, neutro, denso — contra duas alternativas
+descartadas, "sala escura" e "papel de ingresso") foi uma escolha explicita
+apresentada e decidida pelo autor, nao inferida pela IA; e a constituicao do
+projeto (principio IV) proibe telas geradas sem essa escolha. A priorizacao
+de qual fatia implementar em cada sessao, o momento de parar para revisar, e
+os bugs encontrados testando a aplicacao ao vivo no navegador — build de
+producao corrompendo o dev server, resultado de portaria testado com codigo
+errado, logout nao propagando em tela protegida — vieram de uso manual real
+da aplicacao pelo autor, no navegador, nao de leitura de codigo.
+
+**O que nao foi feito com IA:** Frontend completo, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas em /docs e decisões técnicas sobre a estrutura do backend.
+
