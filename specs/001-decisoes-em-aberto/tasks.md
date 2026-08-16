@@ -145,19 +145,19 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 ### Tests for User Story 3
 
-- [ ] T047 [P] [US3] Teste de ingresso disputado em `apps/api/test/gate-concurrency.e2e-spec.ts`: duas `POST /gate/validate` simultaneas com o mesmo codigo, 10 repeticoes, exigindo exatamente um `VALID` e um `ALREADY_USED`
-- [ ] T048 [P] [US3] Teste dos quatro retornos em `apps/api/test/gate.e2e-spec.ts`, incluindo a garantia de que `WRONG_EVENT` **nao** marca o ingresso como usado e ele segue validavel na sessao correta
+- [X] T047 [P] [US3] Teste de ingresso disputado em `apps/api/test/gate-concurrency.e2e-spec.ts`: duas `POST /gate/validate` simultaneas com o mesmo codigo, 10 repeticoes, exigindo exatamente um `VALID` e um `ALREADY_USED`
+- [X] T048 [P] [US3] Teste dos quatro retornos em `apps/api/test/gate.e2e-spec.ts`, incluindo a garantia de que `WRONG_EVENT` **nao** marca o ingresso como usado e ele segue validavel na sessao correta
 
 ### Implementation for User Story 3
 
-- [ ] T049 [P] [US3] Implementar `GET /gate/events` em `apps/api/src/gate/gate.controller.ts` devolvendo `today` e `upcoming` com `ticketsIssued` e `ticketsUsed` conforme `contracts/gate.md`
-- [ ] T050 [US3] Implementar `GateService.validate` em `apps/api/src/gate/gate.service.ts` na ordem de apuracao definida: inexistente → `INVALID`; evento diferente → `WRONG_EVENT`; `updateMany ... WHERE usedAt IS NULL` com `count === 1` → `VALID`; `count === 0` → `ALREADY_USED` com o `usedAt` existente (depende de T035 para a normalizacao do codigo)
-- [ ] T051 [US3] Implementar `POST /gate/validate` respondendo sempre 200 com um dos quatro `result`, e `GATE_SESSION_REQUIRED` quando faltar `eventId`
-- [ ] T052 [US3] Implementar a selecao de sessao em `apps/web/app/portaria/sessoes/`, persistindo a escolha em `localStorage` sob `portaria.sessaoId` (research.md R5)
-- [ ] T053 [US3] Implementar o guard de layout em `apps/web/app/portaria/layout.tsx` redirecionando para a selecao quando nao houver sessao, e mantendo a sessao atual visivel com acao de troca (depende de T052)
-- [ ] T054 [US3] Implementar a leitura por camera com `@zxing/browser` em `apps/web/app/portaria/validar/`, tratando permissao negada com mensagem que explica a exigencia de `https` ou `localhost`
-- [ ] T055 [US3] Implementar a digitacao manual com mascara em quatro grupos e normalizacao antes do envio, no mesmo caminho de validacao da camera
-- [ ] T056 [US3] Implementar os quatro estados de resultado com distincao visual legivel a distancia, exibindo `usedAt` em `ALREADY_USED` e a sessao correta em `WRONG_EVENT` (depende de T016)
+- [X] T049 [P] [US3] Implementar `GET /gate/events` em `apps/api/src/gate/gate.controller.ts` devolvendo `today` e `upcoming` com `ticketsIssued` e `ticketsUsed` conforme `contracts/gate.md`
+- [X] T050 [US3] Implementar `GateService.validate` em `apps/api/src/gate/gate.service.ts` na ordem de apuracao definida: inexistente → `INVALID`; evento diferente → `WRONG_EVENT`; `updateMany ... WHERE usedAt IS NULL` com `count === 1` → `VALID`; `count === 0` → `ALREADY_USED` com o `usedAt` existente (depende de T035 para a normalizacao do codigo)
+- [X] T051 [US3] Implementar `POST /gate/validate` respondendo sempre 200 com um dos quatro `result`, e `GATE_SESSION_REQUIRED` quando faltar `eventId`
+- [X] T052 [US3] Implementar a selecao de sessao em `apps/web/app/portaria/sessoes/`, persistindo a escolha em `localStorage` sob `portaria.sessaoId` (research.md R5)
+- [X] T053 [US3] Implementar o guard de layout em `apps/web/app/portaria/layout.tsx` redirecionando para a selecao quando nao houver sessao, e mantendo a sessao atual visivel com acao de troca (depende de T052)
+- [X] T054 [US3] Implementar a leitura por camera com `@zxing/browser` em `apps/web/app/portaria/validar/`, tratando permissao negada com mensagem que explica a exigencia de `https` ou `localhost`
+- [X] T055 [US3] Implementar a digitacao manual com mascara em quatro grupos e normalizacao antes do envio, no mesmo caminho de validacao da camera
+- [X] T056 [US3] Implementar os quatro estados de resultado com distincao visual legivel a distancia, exibindo `usedAt` em `ALREADY_USED` e a sessao correta em `WRONG_EVENT` (depende de T016)
 
 **Checkpoint**: os quatro retornos do enunciado sao demonstraveis com os dados semeados
 
