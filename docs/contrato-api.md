@@ -3,8 +3,33 @@
 Rascunho do contrato entre `apps/web` e `apps/api`. Serve para as duas pontas
 serem construidas em paralelo sem uma esperar a outra.
 
+Este arquivo fica no nivel de visao geral — metodo, rota, papel, formato do
+corpo. Para o detalhe fino de cada fluxo (ordem de apuracao da portaria,
+tabela de cartoes de teste, os codigos de erro possiveis por rota), ver
+`specs/001-decisoes-em-aberto/contracts/`, que e onde esse detalhe foi
+efetivamente implementado e testado.
+
 Base: `http://localhost:3333`
 Autenticacao: `Authorization: Bearer <jwt>`
+
+## Envelope de erro
+
+Toda falha responde no mesmo formato, produzido por um filtro global:
+
+```json
+{ "error": { "code": "SEATS_TAKEN", "message": "...", "details": {} } }
+```
+
+O front decide pelo `code`, estavel; `message` e texto para humano e pode
+mudar. `details` so aparece quando ha algo acionavel (lista de assentos em
+conflito, contagem de ingressos vendidos). Lista completa de codigos em
+`specs/001-decisoes-em-aberto/contracts/README.md`.
+
+## `serverNow`
+
+Toda resposta que carrega `expiresAt` carrega tambem `serverNow`, no mesmo
+objeto — usado pelo front para corrigir o desvio do relogio do cliente antes
+de montar um contador regressivo, calculado uma unica vez por tela.
 
 ## Autenticacao
 
@@ -33,7 +58,8 @@ A resposta normalizada isola o front do formato do TMDb:
 | GET | `/events/:id` | publico | Detalhe + mapa de assentos com status |
 | PATCH | `/events/:id` | ORGANIZER (dono) | Edita evento |
 | POST | `/events/:id/publish` | ORGANIZER (dono) | `DRAFT` -> `PUBLISHED` |
-| GET | `/organizer/events` | ORGANIZER | Painel: eventos do organizador |
+| POST | `/events/:id/cancel` | ORGANIZER (dono) | Bloqueado se houver ingresso emitido (`409 EVENT_HAS_TICKETS`) |
+| GET | `/organizer/events` | ORGANIZER | Painel: eventos do organizador, com `ticketsIssued` |
 
 Corpo de `POST /events`:
 
@@ -90,9 +116,14 @@ ou `{ status: "DECLINED", declineReason: "..." }`.
 
 | Metodo | Rota | Papel | Descricao |
 |---|---|---|---|
+| GET | `/gate/events` | GATE | Sessoes publicadas para escolher, `{ today: [], upcoming: [] }`, com `ticketsIssued`/`ticketsUsed` |
 | POST | `/gate/validate` | GATE | `{ code, eventId }` |
 
-Resposta com um resultado unico e explicito, os quatro casos do enunciado:
+`eventId` ausente responde **400 `GATE_SESSION_REQUIRED`** — o operador
+precisa escolher a sessao antes de validar.
+
+Resposta de `/gate/validate` com um resultado unico e explicito, os quatro
+casos do enunciado:
 
 ```json
 { "result": "VALID", "ticket": { "title": "...", "seat": "A-12", "holder": "..." } }
@@ -101,4 +132,6 @@ Resposta com um resultado unico e explicito, os quatro casos do enunciado:
 `result`: `VALID` | `INVALID` | `ALREADY_USED` | `WRONG_EVENT`
 
 Em `ALREADY_USED`, devolver tambem `usedAt` — a portaria precisa saber ha
-quanto tempo aquele ingresso passou para decidir o que fazer.
+quanto tempo aquele ingresso passou para decidir o que fazer. Em
+`WRONG_EVENT`, devolver `belongsTo` com a sessao correta, e o ingresso **nao**
+e marcado como usado.

@@ -186,12 +186,12 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T062 [P] Enriquecer `apps/api/prisma/seed.ts` com assentos ja vendidos na sessao 1, um ingresso ja validado, uma reserva `PENDING` ja vencida, e impressao dos codigos dos ingressos ao fim da execucao (depende de T036) — sem isso o roteiro do quickstart exige preparacao manual
-- [ ] T063 [P] Fechar a secao "A decidir" de `docs/decisoes.md` com a expiracao sob demanda e a ordem `UPDATE` antes de `DELETE`, e acrescentar as decisoes de research.md R3, R4 e R6
-- [ ] T064 [P] Atualizar `docs/contrato-api.md` com `GET /gate/events`, `POST /events/:id/cancel`, o campo `serverNow` e o envelope de erro
-- [ ] T065 [P] Escrever no `README.md` os cartoes de teste, as contas semeadas, a exigencia de `https` para a camera e o que reconhecidamente nao funciona
-- [ ] T066 Verificar que numero de cartao nao aparece em log nem em resposta de erro, em `apps/api/src/payments/` e no filtro global
-- [ ] T067 [P] Avaliar a troca de `@@index([status, expiresAt])` por `[eventId, status, expiresAt]` em `apps/api/prisma/schema.prisma` (research.md R10) — desempenho, nao corretude
+- [X] T062 [P] Enriquecer `apps/api/prisma/seed.ts` com assentos ja vendidos na sessao 1, um ingresso ja validado, uma reserva `PENDING` ja vencida, e impressao dos codigos dos ingressos ao fim da execucao (depende de T036) — sem isso o roteiro do quickstart exige preparacao manual
+- [X] T063 [P] Fechar a secao "A decidir" de `docs/decisoes.md` com a expiracao sob demanda e a ordem `UPDATE` antes de `DELETE`, e acrescentar as decisoes de research.md R3, R4 e R6
+- [X] T064 [P] Atualizar `docs/contrato-api.md` com `GET /gate/events`, `POST /events/:id/cancel`, o campo `serverNow` e o envelope de erro
+- [X] T065 [P] Escrever no `README.md` os cartoes de teste, as contas semeadas, a exigencia de `https` para a camera e o que reconhecidamente nao funciona
+- [X] T066 Verificar que numero de cartao nao aparece em log nem em resposta de erro, em `apps/api/src/payments/` e no filtro global
+- [X] T067 [P] Avaliar a troca de `@@index([status, expiresAt])` por `[eventId, status, expiresAt]` em `apps/api/prisma/schema.prisma` (research.md R10) — desempenho, nao corretude
 - [ ] T068 Percorrer os quatro cenarios de [quickstart.md](./quickstart.md) com o banco recem-semeado, do zero
 - [ ] T069 Rodar a checagem de regressao final de [quickstart.md](./quickstart.md)
 
