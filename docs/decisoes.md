@@ -282,24 +282,24 @@ versionados em `specs/001-decisoes-em-aberto/` e a constituicao do projeto em
 `.specify/memory/constitution.md`.
 
 **O que a IA fez:** pegando a partir das especificações (`spec.md`, `research.md`,
-`data-model.md`, os contratos),foi desenvolvido os schema no prisma — , algumas partes do backend, testes automatizados e este documento.
+`data-model.md`, os contratos),foi desenvolvido os schemas no prisma — , algumas partes do backend, testes automatizados e este documento.
 
 As decisoes tecnicas registradas neste arquivo (ordem das escritas na
 expiracao, formato do codigo do ingresso, ausencia de chave de idempotencia,
 escolha da lib de camera) foram propostas, justificadas e implementadas pela
-IA, com alternativas descartadas explicitadas para o autor poder discordar.
+IA.
 
-**O que foi decisao do autor, nao da ferramenta:** toda a especificacao (`spec.md`, `research.md`,
+**O que foi decisao do autor, nao da ferramenta:** a utilização de SPECS (`spec.md`, `research.md`,
 `data-model.md`, os contratos), o desenho tecnico o partido visual da
 interface ("Bilheteria" — claro, neutro, denso — contra duas alternativas
 descartadas, "sala escura" e "papel de ingresso") foi uma escolha explicita
-apresentada e decidida pelo autor, nao inferida pela IA; e a constituicao do
+apresentada e decidida por mim, nao inferida pela IA; e a constituicao do
 projeto (principio IV) proibe telas geradas sem essa escolha. A priorizacao
 de qual fatia implementar em cada sessao, o momento de parar para revisar, e
 os bugs encontrados testando a aplicacao ao vivo no navegador — build de
 producao corrompendo o dev server, resultado de portaria testado com codigo
 errado, logout nao propagando em tela protegida — vieram de uso manual real
-da aplicacao pelo autor, no navegador, nao de leitura de codigo.
+da aplicacao por mim, no navegador.
 
-**O que nao foi feito com IA:** Código do frontend, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas neste documento e decisões técnicas sobre a estrutura do backend.
+**O que nao foi feito com IA:** Escolha do NextJs no frontend, consumo da API, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas neste documento e decisões técnicas sobre a estrutura do backend.
 
