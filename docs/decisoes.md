@@ -254,21 +254,21 @@ de erro nem na resposta".
 
 ## Uso de IA
 
-Este projeto foi construido com Claude Code (modelo Sonnet 5) do inicio ao
-fim, usando o fluxo do Spec Kit (`speckit-specify` -> `speckit-plan` ->
+ Foi utilizado neste projeto SPECS, com uso da ferramenta Spec Kit (`speckit-specify` -> `speckit-plan` ->
 `speckit-tasks` -> `speckit-implement`), com os artefatos de processo
 versionados em `specs/001-decisoes-em-aberto/` e a constituicao do projeto em
 `.specify/memory/constitution.md`.
 
-**O que a IA fez:** toda a especificacao (`spec.md`, `research.md`,
-`data-model.md`, os contratos), o desenho tecnico, e praticamente todo o
-codigo — schema, backend, frontend, testes automatizados e este documento.
+**O que a IA fez:** pegando a partir das especificações (`spec.md`, `research.md`,
+`data-model.md`, os contratos),foi desenvolvido os schema no prisma — , algumas partes do backend, testes automatizados e este documento.
+
 As decisoes tecnicas registradas neste arquivo (ordem das escritas na
 expiracao, formato do codigo do ingresso, ausencia de chave de idempotencia,
 escolha da lib de camera) foram propostas, justificadas e implementadas pela
 IA, com alternativas descartadas explicitadas para o autor poder discordar.
 
-**O que foi decisao do autor, nao da ferramenta:** o partido visual da
+**O que foi decisao do autor, nao da ferramenta:** toda a especificacao (`spec.md`, `research.md`,
+`data-model.md`, os contratos), o desenho tecnico o partido visual da
 interface ("Bilheteria" — claro, neutro, denso — contra duas alternativas
 descartadas, "sala escura" e "papel de ingresso") foi uma escolha explicita
 apresentada e decidida pelo autor, nao inferida pela IA; e a constituicao do
@@ -279,5 +279,5 @@ producao corrompendo o dev server, resultado de portaria testado com codigo
 errado, logout nao propagando em tela protegida — vieram de uso manual real
 da aplicacao pelo autor, no navegador, nao de leitura de codigo.
 
-**O que nao foi feito com IA:** Frontend completo, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas em /docs e decisões técnicas sobre a estrutura do backend.
+**O que nao foi feito com IA:** Código do frontend, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas neste documento e decisões técnicas sobre a estrutura do backend.
 
