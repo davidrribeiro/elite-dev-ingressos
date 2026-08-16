@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { QrCode } from '@/components/qr-code';
+import { RequireRole } from '@/components/require-role';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,14 @@ import { formatarCodigoIngresso } from '@/lib/ticket-code';
 import type { TicketDetail } from '@/lib/types';
 
 export function TicketView({ ticketId }: { ticketId: string }) {
+  return (
+    <RequireRole role="CUSTOMER">
+      <TicketDetailView ticketId={ticketId} />
+    </RequireRole>
+  );
+}
+
+function TicketDetailView({ ticketId }: { ticketId: string }) {
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);

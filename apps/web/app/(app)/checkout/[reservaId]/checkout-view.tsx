@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { RequireRole } from '@/components/require-role';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,14 @@ import { PaymentForm } from './payment-form';
  * ler o token. Ver docs/decisoes.md.
  */
 export function CheckoutView({ reservaId }: { reservaId: string }) {
+  return (
+    <RequireRole role="CUSTOMER">
+      <Checkout reservaId={reservaId} />
+    </RequireRole>
+  );
+}
+
+function Checkout({ reservaId }: { reservaId: string }) {
   const router = useRouter();
   const [reserva, setReserva] = useState<ReservationDetail | null>(null);
   const [erro, setErro] = useState<string | null>(null);

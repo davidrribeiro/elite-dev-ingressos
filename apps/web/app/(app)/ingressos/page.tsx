@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { RequireRole } from '@/components/require-role';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api';
@@ -15,6 +16,14 @@ import type { TicketSummary } from '@/lib/types';
  * localStorage — um Server Component nao teria como le-lo.
  */
 export default function MeusIngressosPage() {
+  return (
+    <RequireRole role="CUSTOMER">
+      <ListaDeIngressos />
+    </RequireRole>
+  );
+}
+
+function ListaDeIngressos() {
   const [tickets, setTickets] = useState<TicketSummary[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 

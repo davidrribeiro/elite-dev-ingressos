@@ -3,22 +3,39 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
+import { RequireRole } from '@/components/require-role';
 import { GateSessionSummary, lerSessaoPortaria } from '@/lib/gate-session';
 import { formatarData } from '@/lib/money';
 
 const ROTA_ESCOLHA = '/portaria/sessoes';
 
 /**
- * Guarda de toda a area de portaria: sem sessao escolhida, nao ha validacao
- * possivel — o layout bloqueia a renderizacao dos filhos e redireciona para
- * a escolha, em vez de deixar a tela de validar tentar chamar a API sem
- * `eventId`.
+ * Guarda de toda a area de portaria, em duas camadas.
  *
+ * `RequireRole` cobre a sessao de autenticacao: sem ela, um logout com a
+ * tela de validar aberta deixava o resultado da ultima leitura visivel
+ * indefinidamente, porque nada aqui dependia de `user` — so do
+ * localStorage da sessao escolhida, que o logout nao mexe.
+ *
+ * `GuardaDeSessao` cobre a escolha de qual evento validar: sem ela, nao ha
+ * validacao possivel — bloqueia a renderizacao dos filhos e redireciona
+ * para a escolha, em vez de deixar a tela de validar tentar chamar a API
+ * sem `eventId`.
+ */
+export default function PortariaLayout({ children }: { children: ReactNode }) {
+  return (
+    <RequireRole role="GATE">
+      <GuardaDeSessao>{children}</GuardaDeSessao>
+    </RequireRole>
+  );
+}
+
+/**
  * `children` so renderiza depois que a sessao e confirmada (ou na propria
  * pagina de escolha), o que evita a corrida entre o guard e a pagina filha
  * tentando ler o mesmo localStorage ao mesmo tempo.
  */
-export default function PortariaLayout({ children }: { children: ReactNode }) {
+function GuardaDeSessao({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sessao, setSessao] = useState<GateSessionSummary | null | undefined>(undefined);
