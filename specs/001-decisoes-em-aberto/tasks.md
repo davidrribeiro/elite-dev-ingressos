@@ -171,14 +171,14 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 ### Tests for User Story 4
 
-- [ ] T057 [P] [US4] Teste em `apps/api/test/events.e2e-spec.ts`: cancelar sessao com ingressos retorna `EVENT_HAS_TICKETS` com `details.ticketCount`; sem ingressos, retorna 204 e a sessao sai da listagem publica
+- [X] T057 [P] [US4] Teste em `apps/api/test/events.e2e-spec.ts`: cancelar sessao com ingressos retorna `EVENT_HAS_TICKETS` com `details.ticketCount`; sem ingressos, retorna 204 e a sessao sai da listagem publica
 
 ### Implementation for User Story 4
 
-- [ ] T058 [US4] Implementar `POST /events/:id/cancel` em `apps/api/src/events/events.controller.ts`, bloqueando quando houver ingresso emitido (depende de T036)
-- [ ] T059 [US4] Excluir sessoes `CANCELLED` da listagem publica e recusar reservas com `EVENT_NOT_PUBLISHED` em `apps/api/src/events/events.service.ts` e `reservations.service.ts`
+- [X] T058 [US4] Implementar `POST /events/:id/cancel` em `apps/api/src/events/events.controller.ts`, bloqueando quando houver ingresso emitido (depende de T036)
+- [X] T059 [US4] Excluir sessoes `CANCELLED` da listagem publica e recusar reservas com `EVENT_NOT_PUBLISHED` em `apps/api/src/events/events.service.ts` e `reservations.service.ts`
 - [ ] T060 [US4] Implementar cancelamento no painel do organizador em `apps/web/app/(organizador)/eventos/`, exibindo a mensagem de bloqueio com a quantidade vendida
-- [ ] T061 [US4] Declarar na tela do ingresso que a compra e definitiva, em `apps/web/app/(cliente)/ingressos/` — a ausencia de estorno precisa ser lida como escolha, nao como funcionalidade faltando
+- [X] T061 [US4] Declarar na tela do ingresso que a compra e definitiva, em `apps/web/app/(cliente)/ingressos/` — a ausencia de estorno precisa ser lida como escolha, nao como funcionalidade faltando
 
 **Checkpoint**: nenhum caminho da interface deixa um cliente com ingresso de sessao que nao existe mais
 
