@@ -252,6 +252,28 @@ de erro nem na resposta".
 
 ---
 
+## Indice da varredura de reservas vencidas
+
+**Escolha:** manter `@@index([status, expiresAt])`, sem acrescentar `eventId`
+ao indice.
+
+**Por que:** a varredura (secao "Reserva expira") filtra por
+`eventId + status + expiresAt`. O indice atual cobre dois dos tres campos; o
+Postgres filtra o terceiro (`eventId`) sobre um resultado ja pequeno, porque
+`status = 'PENDING' AND expiresAt < agora` ja reduz bastante as linhas
+candidatas antes do filtro por evento entrar. Na escala deste projeto —
+avaliacao, nao producao com milhares de sessoes simultaneas — a diferenca e
+imperceptivel.
+
+**Descartado:** `@@index([eventId, status, expiresAt])`. Resolveria uma
+questao de desempenho que ainda nao existe, as custas de uma migration e de
+um indice a mais para o Postgres manter em toda escrita de `Reservation`.
+Trocar so faria sentido com um numero de sessoes concorrentes que este
+desafio nao tem como demonstrar — decisao registrada para nao virar duvida
+recorrente, nao para ser revertida sem motivo novo.
+
+---
+
 ## Uso de IA
 
  Foi utilizado neste projeto SPECS, com uso da ferramenta Spec Kit (`speckit-specify` -> `speckit-plan` ->
