@@ -177,7 +177,7 @@ demonstracao dos requisitos obrigatorios do desafio.
 
 - [X] T058 [US4] Implementar `POST /events/:id/cancel` em `apps/api/src/events/events.controller.ts`, bloqueando quando houver ingresso emitido (depende de T036)
 - [X] T059 [US4] Excluir sessoes `CANCELLED` da listagem publica e recusar reservas com `EVENT_NOT_PUBLISHED` em `apps/api/src/events/events.service.ts` e `reservations.service.ts`
-- [ ] T060 [US4] Implementar cancelamento no painel do organizador em `apps/web/app/(organizador)/eventos/`, exibindo a mensagem de bloqueio com a quantidade vendida
+- [X] T060 [US4] Implementar cancelamento no painel do organizador em `apps/web/app/(organizador)/eventos/`, exibindo a mensagem de bloqueio com a quantidade vendida
 - [X] T061 [US4] Declarar na tela do ingresso que a compra e definitiva, em `apps/web/app/(cliente)/ingressos/` — a ausencia de estorno precisa ser lida como escolha, nao como funcionalidade faltando
 
 **Checkpoint**: nenhum caminho da interface deixa um cliente com ingresso de sessao que nao existe mais
