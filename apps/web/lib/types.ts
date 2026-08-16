@@ -131,6 +131,36 @@ export interface PublicTicket {
   seat: TicketSeatSummary;
 }
 
+export interface GateEventSummary {
+  id: string;
+  title: string;
+  venue: string;
+  startsAt: string;
+  ticketsIssued: number;
+  ticketsUsed: number;
+}
+
+export interface GateEventsResponse {
+  today: GateEventSummary[];
+  upcoming: GateEventSummary[];
+}
+
+export type GateValidateResult =
+  | {
+      result: 'VALID';
+      ticket: { title: string; startsAt: string; seat: string; holder: string };
+    }
+  | {
+      result: 'ALREADY_USED';
+      usedAt: string;
+      ticket: { seat: string; holder: string };
+    }
+  | {
+      result: 'WRONG_EVENT';
+      belongsTo: { title: string; venue: string; startsAt: string };
+    }
+  | { result: 'INVALID' };
+
 export interface CatalogMovie {
   tmdbId: number;
   title: string;
