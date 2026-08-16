@@ -301,5 +301,3 @@ producao corrompendo o dev server, resultado de portaria testado com codigo
 errado, logout nao propagando em tela protegida — vieram de uso manual real
 da aplicacao por mim, no navegador.
 
-**O que nao foi feito com IA:** Escolha do NextJs no frontend, consumo da API, layout e regras de role guard, estilização utilizando tailwindcss, tomanda de decisões escritas neste documento e decisões técnicas sobre a estrutura do backend.
-
