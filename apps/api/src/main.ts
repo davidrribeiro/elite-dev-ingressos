@@ -12,6 +12,8 @@ async function bootstrap() {
 
   configureApp(app);
 
-  await app.listen(process.env.API_PORT ?? 3333);
+  // Railway injeta PORT e espera a app escutar nele; API_PORT continua
+  // valendo pra dev local e outros ambientes que nao definem PORT.
+  await app.listen(process.env.PORT ?? process.env.API_PORT ?? 3333);
 }
 void bootstrap();
